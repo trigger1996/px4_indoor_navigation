@@ -1,0 +1,3 @@
+[submodule "GAAS"]
+	path = GAAS
+	url = https://github.com/generalized-intelligence/GAAS
