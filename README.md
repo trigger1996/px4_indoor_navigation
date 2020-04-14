@@ -31,6 +31,8 @@
 			source devel/setup.bash
 			rosrun px4_indoor px4_indoor_key_control
 
+		注意：原来要用QGC改EKF2_AID_MASK，从1改到8，这个整合进启动脚本了
+
 ##	4 Cartographer Only
 		TODO
 
@@ -64,4 +66,6 @@
 		双目相机数据是
 			/gi/simulation/
 		然后后面一堆
+
+#SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
