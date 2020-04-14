@@ -1,10 +1,9 @@
 使用大致流程
 	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
-		
+		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
 	2 安装cartographer_ros，版本1.0.0
 		https://google-cartographer-ros.readthedocs.io/en/latest/compilation.html
 	3 复制Firmware覆盖原始Firmware
-		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
 
 已知问题
 	1 当前只有Ubuntu 18.04.4通过测试，老的18.04.2不知道为什么不行，18.04.3没有测试，因为自动登录有问题，不适合机载计算机使用（截止2020.4.14）
@@ -14,4 +13,13 @@
 几个参考
 	在gazebo中给无人机添加激光雷达和光流传感器并开始仿真	
 	https://zhuanlan.zhihu.com/p/31878534?from_voters_page=true
+
+	如何确定激光雷达数据是否正常
+		rostopic echo
+		激光雷达数据是
+			/laser/scan
+	如何确定双目相机数据是否正常
+		双目相机数据是
+			/gi/simulation/
+		然后后面一堆
 
