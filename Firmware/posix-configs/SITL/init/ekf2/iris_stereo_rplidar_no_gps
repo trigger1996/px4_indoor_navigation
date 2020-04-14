@@ -45,6 +45,7 @@ param set SENS_BOARD_X_OFF 0.000001
 param set SYS_AUTOSTART 4010
 param set SYS_MC_EST_GROUP 2
 param set SYS_RESTART_TYPE 2
+param set EKF2_AID_MASK 8
 replay tryapplyparams
 simulator start -s
 tone_alarm start
