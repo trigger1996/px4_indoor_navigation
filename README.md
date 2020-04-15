@@ -1,4 +1,4 @@
-#使用大致流程
+#	使用大致流程
 
 	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
@@ -6,7 +6,7 @@
 		https://google-cartographer-ros.readthedocs.io/en/latest/compilation.html
 	3 复制Firmware覆盖原始Firmware
 
-#启动方式
+#	启动方式
 
 	1 大致思路
 		一个Terminal开gazebo
@@ -150,7 +150,12 @@
 			这里的range_finder::link必须和range_finder和link对应
 			不然传感器加不进来
 
+##	加一个猜测
+	为什么真机飞不起来？
+		今天试了一把，误将pose类型（而非posestamped）类型的数据传入/mavros/vision_pose/pose内
+		可以收，但是反馈的/mavros/altitude高度数据有问题，导致飞机可以解锁，但是无法起飞
+		所以实体机到时候要注意一下高度
 
-#SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
+#	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
 
