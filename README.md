@@ -30,8 +30,8 @@
 			~/catkin_ws_ros/src/px4_indoor/GAAS/software/SLAM/ygz_slam_ros
 
 		Terminal 3 (Key manpulation)
-			cd catkin_ws_ros/
-			source devel/setup.bash
+			# cd catkin_ws_ros/
+			# source devel/setup.bash
 			rosrun px4_indoor px4_indoor_key_control
 
 		注意：原来要用QGC改EKF2_AID_MASK，从1改到8，这个整合进启动脚本了
@@ -50,7 +50,12 @@
 			https://blog.csdn.net/xiaodingqq/article/details/88136323?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3
 		
 		
-		
+		Terminal 1 (Gazebo)
+			cd ~/catkin_ws/src/Firmware
+			roslaunch launch/indoor_cartographer/mavros_posix_sitl_rplidar_no_gps.launch
+
+		Terminal 2 (Key manpulation)
+			rosrun px4_indoor px4_indoor_key_control
 
 ##	5 Cartographer + VSLAM
 
