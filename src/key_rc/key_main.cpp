@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     double roll = 0., pitch = 0., yaw = 0.;
     pose.pose.position.x = 0;
     pose.pose.position.y = 0;
-    pose.pose.position.z = 0.8;     // in meters
+    pose.pose.position.z = 0.45;     // in meters
 
     //send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i){
