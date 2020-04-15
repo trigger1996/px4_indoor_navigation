@@ -49,7 +49,7 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg){
 }
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "offb_node");
+    ros::init(argc, argv, "key_rc_node");
     ros::NodeHandle nh;
 
     int ch = 0;
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     double roll = 0., pitch = 0., yaw = 0.;
     pose.pose.position.x = 0;
     pose.pose.position.y = 0;
-    pose.pose.position.z = 0.2;
+    pose.pose.position.z = 0.8;     // in meters
 
     //send a few setpoints before starting
     for(int i = 100; ros::ok() && i > 0; --i){
@@ -131,16 +131,16 @@ int main(int argc, char **argv) {
                     { system(STTY_DEF TTY_PATH); return 0; }
                 case 'w':
                 case 'W':
-                    pose.pose.position.x += 0.01;   break;      // 0.05
+                    pose.pose.position.x += 0.025;   break;      // 0.05
                 case 'a':
                 case 'A':
-                    pose.pose.position.y += 0.01;   break;      // ENU
+                    pose.pose.position.y += 0.025;   break;      // ENU
                 case 's':
                 case 'S':
-                    pose.pose.position.x -= 0.01;   break;
+                    pose.pose.position.x -= 0.025;   break;
                 case 'd':
                 case 'D':
-                    pose.pose.position.y -= 0.01;   break;
+                    pose.pose.position.y -= 0.025;   break;
                 case 'q':
                 case 'Q':
                     yaw -= 5. * M_PI / 180.; break;             // 旋转
@@ -149,10 +149,10 @@ int main(int argc, char **argv) {
                     yaw += 5. * M_PI / 180.; break;
                 case 'x':
                 case 'X':
-                    pose.pose.position.z += 0.05;   break;      // 上升/下降
+                    pose.pose.position.z += 0.075;   break;      // 上升/下降
                 case 'z':
                 case 'Z':
-                    pose.pose.position.z -= 0.05;   break;
+                    pose.pose.position.z -= 0.075;   break;
             }
         }
 

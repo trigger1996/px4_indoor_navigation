@@ -38,7 +38,19 @@
 
 ##	4 Cartographer Only
 
-		TODO
+		改~/.bashrc最后几行为
+			source /opt/ros/melodic/setup.bash
+			#source ~/catkin_ws/devel/setup.bash
+			source ~/catkin_ws_ros/devel/setup.bash
+			#source ~/catkin_ws_src/devel/setup.bash
+			source ~/catkin_ws/src/Firmware/Tools/setup_gazebo.bash ~/catkin_ws/src/Firmware/ ~/catkin_ws/src/Firmware/build/posix_sitl_default
+			export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/catkin_ws/src/Firmware
+			export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/catkin_ws/src/Firmware/Tools/sitl_gazebo
+		主要是上面几个source，如果出问题了，这没有好办法，就是一个个屏蔽了试过去 
+			https://blog.csdn.net/xiaodingqq/article/details/88136323?depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3&utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-3
+		
+		
+		
 
 ##	5 Cartographer + VSLAM
 

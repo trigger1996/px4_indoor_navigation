@@ -140,6 +140,10 @@ add_executable(${PROJECT_NAME}_key_control
     src/key_rc/key_main.cpp
 )
 
+add_executable(${PROJECT_NAME}_topic_relay
+    src/topic_relay/topic_relay_main.cpp
+)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -152,6 +156,10 @@ add_executable(${PROJECT_NAME}_key_control
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_key_control
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(${PROJECT_NAME}_topic_relay
     ${catkin_LIBRARIES}
 )
 
