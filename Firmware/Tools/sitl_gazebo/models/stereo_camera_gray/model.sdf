@@ -1,0 +1,92 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="stereo_camera_gray">
+    <link name="link">
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.19</mass>
+        <inertia>
+          <ixx>4.15e-6</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>2.407e-6</iyy>
+          <iyz>0</iyz>
+          <izz>2.407e-6</izz>
+        </inertia>
+      </inertial>
+
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.01 0.12 0.01</size>
+          </box>
+        </geometry>
+      </visual>
+
+    <sensor type="multicamera" name="stereo_camera">
+      <pose frame=''>0 0 0.2 0 0 0</pose>
+      <child>/multicamera_link</child>
+      <parent>base_link</parent>
+      <update_rate>30.0</update_rate>
+      <camera name="right">
+        <pose>0 0.12 0 0 0 0</pose>
+        <horizontal_fov>1.5708</horizontal_fov>
+        <image>
+          <width>752</width>
+          <height>480</height>
+          <format>L8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.000</stddev>
+        </noise>
+      </camera>
+      <camera name="left">
+        <pose>0 0 0 0 0 0</pose>
+        <horizontal_fov>1.5708</horizontal_fov>
+        <image>
+          <width>752</width>
+          <height>480</height>
+          <format>L8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.000</stddev>
+        </noise>
+      </camera>
+      <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>gi/simulation</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>left_camera_optical_frame</frameName>
+        <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
+        <hackBaseline>0.05</hackBaseline>
+        <Fx>376.0</Fx>
+        <Fy>376.0</Fy>
+        <Cx>376.0</Cx>
+        <Cy>240.0</Cy>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+    </link>
+  </model>
+</sdf>
+
+<!-- vim: set et fenc= ff=unix sts=0 sw=2 ts=2 : -->

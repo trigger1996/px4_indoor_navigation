@@ -1,4 +1,5 @@
 #使用大致流程
+
 	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
 	2 安装cartographer_ros，版本1.0.0
@@ -6,6 +7,7 @@
 	3 复制Firmware覆盖原始Firmware
 
 #启动方式
+
 	1 大致思路
 		一个Terminal开gazebo
 		一个Terminal开SLAM		如果是Cartographer可以用roslaunch和gazebo整合，如果是VSLAM没招
@@ -19,6 +21,7 @@
 		因为cartographer用catkin_make_isolated编译，和本工程冲突
 
 ##	3 GAAS课程3
+
 		Terminal 1 (Gazebo)
 			cd ~/catkin_ws/src/Firmware
 			roslaunch launch/simple_tests/mavros_posix_sitl_rplidar_no_gps.launch
@@ -34,15 +37,19 @@
 		注意：原来要用QGC改EKF2_AID_MASK，从1改到8，这个整合进启动脚本了
 
 ##	4 Cartographer Only
+
 		TODO
 
 ##	5 Cartographer + VSLAM
+
 		TODO
 
 ##	6 GAAS课程4
+
 		TODO
 
 ##	7 自定path planning
+
 		TODO
 
 #已知问题
@@ -67,5 +74,34 @@
 			/gi/simulation/
 		然后后面一堆
 
+	ROS常用操作
+	rostopic
+		rostopic list
+		rostopic echo
+		rqt_graph
+	TF
+		https://www.cnblogs.com/CZM-/p/5879845.html
+		rosrun tf tf_echo <坐标系1> <坐标系2>
+		rosrun rqt_tf_tree rqt_tf_tree
+		rosrun tf view_frames  
+
+		<node pkg="tf" type="static_transform_publisher" name="join_laser" args="0 0 0 0 0 0 base_link laser 10" />
+
+	如何使用cartographer
+		https://ardupilot.org/dev/docs/ros-cartographer-slam.html
+		https://blog.csdn.net/qq_38649880/article/details/88372390
+
+		仿真：
+			robot_pose_publisher
+			cartographer的lua文件
+			cartographer的launch文件
+				注意tf
+				有条件可以开rviz
+		实体机：
+			多一个rplidar_ros
+
+
+
 #SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
+
 
