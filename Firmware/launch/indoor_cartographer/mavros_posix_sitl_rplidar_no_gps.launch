@@ -77,7 +77,7 @@
           type="robot_pose_publisher"
           respawn="false"
           output="screen" >
-          <remap from="/robot_pose" to="/mavros/vision_pose/pose" />
+          <!--remap from="/robot_pose" to="/mavros/vision_pose/pose" /-->
     </node>
 
     <!-- TF -->
