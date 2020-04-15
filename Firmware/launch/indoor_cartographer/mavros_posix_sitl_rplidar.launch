@@ -82,4 +82,10 @@
 
     <!-- TF -->
     <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+          args="-d $(find px4)/launch/indoor_cartographer/configs/rplidar_cartographer.rviz" >
+    </node>
+
 </launch>
