@@ -47,7 +47,7 @@
         </ray>
         <plugin name="laser" filename="libRayPlugin.so" />
         <plugin name="gazebo_ros_head_rplidar_controller" filename="libgazebo_ros_laser.so">
-          <topicName>scan</topicName>
+          <topicName>/laser/scan</topicName>
           <frameName>rplidar_link</frameName>
         </plugin>
         <always_on>1</always_on>

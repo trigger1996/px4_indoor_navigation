@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="range_finder">
+    <link name="link">
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.015</mass>
+        <inertia>
+          <ixx>2.1733e-6</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>2.1733e-6</iyy>
+          <iyz>0</iyz>
+          <izz>1.8e-7</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <cylinder><radius>0.008</radius><length>0.1</length></cylinder>
+        </geometry>
+        <!--material>
+          <script>
+            <name>Gazebo/Black</name>
+          </script>
+        </material-->
+      </visual>
+      <sensor name="laser" type="ray">
+        <pose>0 0 0 0 1.57 0</pose>
+        <ray>
+          <range>
+            <min>0.01</min> <!-- do not change: use min_distance (below) for realistic behavior (smaller values cause issues) -->
+            <max>35</max>   <!-- do not change: use min_distance (below) for realistic behavior (bigger values cause issues) -->
+            <resolution>0.002</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.02</stddev>
+          </noise>
+        </ray>
+        <plugin name="RangerFinderPlugin" filename="libgazebo_ros_range.so">
+        <!-- https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/src/gazebo_ros_range.cpp -->
+          <robotNamespace></robotNamespace>
+          <frameName>sonic</frameName>
+          <topicName>/range</topicName>
+          <radiation>infrared</radiation>
+          <fov>0.01</fov>
+          <gaussianNoise>0</gaussianNoise>
+          <min_distance>0.01</min_distance>
+          <max_distance>15.0</max_distance>
+        </plugin>
+        <always_on>1</always_on>
+        <update_rate>40</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </link>
+  </model>
+</sdf>

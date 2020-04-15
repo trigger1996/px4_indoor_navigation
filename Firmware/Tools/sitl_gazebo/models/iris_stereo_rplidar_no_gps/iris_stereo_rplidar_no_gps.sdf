@@ -6,12 +6,12 @@
       <uri>model://iris_no_gps</uri>
     </include> 
 
-    <!--include>
-      <uri>model://lidar</uri>
-      <pose>-0.12 0 0 0 3.1415 0</pose>
+    <include>
+      <uri>model://range_finder</uri>
+      <pose>-0.12 0 -0.05 0 0 0</pose>
     </include>
-    <joint name="lidar_joint" type="fixed">
-      <child>lidar::link</child>
+    <joint name="range_finder" type="fixed">
+      <child>range_finder::link</child>
       <parent>iris::base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
@@ -20,7 +20,7 @@
           <lower>0</lower>
         </limit>
       </axis>
-    </joint-->
+    </joint>
 
     <include>
       <uri>model://flow_cam</uri>
