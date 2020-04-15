@@ -118,6 +118,38 @@
 			多一个rplidar_ros
 
 
+	如何使用gazebo_plugin自己设计传感器
+		https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/src/gazebo_ros_range.cpp
+		gazebosim.org/tutorials?tut=ros_gzplugins
+
+
+		其实核心就是看着cpp写xml就行
+		那个高度计就是自己做的
+
+
+	如何使用gazebo自增加模型
+		参考里面做好的
+		就一个细节这里需要强调：
+			以iris_lidar.sdf为例
+			iris_lidar/iris_lidar.sdf内
+			    <include>
+      				<uri>model://range_finder</uri>
+      				<pose>-0.12 0 -0.05 0 0 0</pose>
+    				</include>
+    				<joint name="range_finder" type="fixed">
+      				<child>range_finder::link</child>
+      				<parent>iris::base_link</parent>
+      				<axis>
+
+			range_finder/model.sdf内	
+				<?xml version="1.0" ?>
+				<sdf version="1.5">
+  					<model name="range_finder">
+    					<link name="link">
+
+			这里的range_finder::link必须和range_finder和link对应
+			不然传感器加不进来
+
 
 #SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
