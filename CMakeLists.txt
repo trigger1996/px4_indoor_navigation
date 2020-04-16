@@ -14,6 +14,9 @@ find_package(catkin REQUIRED
     roscpp
     rospy
     std_msgs
+    cv_bridge
+    image_transport
+    dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions

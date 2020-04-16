@@ -7,3 +7,4 @@ src/topic_relay
 src/visual_obstacle_map/cfg/cpp/Obstacle_Map
 src/visual_obstacle_map/include
 src/key_rc
+src/visual_obstacle_map

@@ -1,3 +1,4 @@
+src/visual_obstacle_map/CMakeLists.txt
 src/visual_obstacle_map/src/pcl_helper.cpp
 src/visual_obstacle_map/src/match_pointcloud_and_slam_pose2.cpp
 src/visual_obstacle_map/src/match_pointcloud_and_slam_pose.cpp
