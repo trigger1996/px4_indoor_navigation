@@ -1,3 +1,6 @@
 [submodule "GAAS"]
 	path = GAAS
 	url = https://github.com/generalized-intelligence/GAAS
+[submodule "gazebo_models"]
+	path = gazebo_models
+	url = https://gitee.com/trigger1996/gazebo_models

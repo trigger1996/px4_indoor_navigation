@@ -1,3 +1,13 @@
+src/visual_obstacle_map/src/pcl_helper.cpp
+src/visual_obstacle_map/src/match_pointcloud_and_slam_pose2.cpp
+src/visual_obstacle_map/src/match_pointcloud_and_slam_pose.cpp
+src/visual_obstacle_map/src/dense_reconstruction.cpp
+src/visual_obstacle_map/include/popt_pp.h
+src/visual_obstacle_map/include/pcl_helper.h
+src/visual_obstacle_map/cfg/cpp/stereo_dense_reconstruction/CamToRobotCalibParamsConfig.h
+src/visual_obstacle_map/cfg/cpp/Obstacle_Map/CamToRobotCalibParamsConfig.h
+src/topic_relay/topic_relay_main.cpp
+src/key_rc/key_main.cpp
 src/topic_relay/topic_relay_main.cpp
 CMakeLists.txt
 README.md

@@ -163,6 +163,8 @@ target_link_libraries(${PROJECT_NAME}_topic_relay
     ${catkin_LIBRARIES}
 )
 
+include(src/visual_obstacle_map/CMakeLists.txt)
+
 #############
 ## Install ##
 #############

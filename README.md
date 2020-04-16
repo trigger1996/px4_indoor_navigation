@@ -1,5 +1,8 @@
 #	使用大致流程
 
+	0 
+		git submodule update --init --recursive
+
 	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
 	2 安装cartographer_ros，版本1.0.0
@@ -71,7 +74,21 @@
 
 ##	6 GAAS课程4
 
-		TODO
+		GAAS课程4的用不了，因为里面的模型不是所有Gazebo都有，所以决定自己重画一个
+		下载Gazebo模型
+		https://blog.csdn.net/qq_40213457/article/details/81021562
+		链接：http://pan.baidu.com/s/1pKaeg0F 密码：cmxc （来自rosclub.cn）
+		或是下载https://bitbucket.org/osrf/gazebo_models/downloads/ (ExBot ROS专区，网友提醒)
+		这里完成下载后，model在~/src/Gazebo/model内
+		
+		
+		修改～/.bashrc，在最后加一行
+			export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/catkin_ws_ros/src/px4_indoor/gazebo_models
+
+
+		本次实验是在有GPS情况下完成，以减少复杂度
+
+
 
 ##	7 自定path planning
 
@@ -81,6 +98,7 @@
 	1 当前只有Ubuntu 18.04.4通过测试，老的18.04.2不知道为什么不行，18.04.3没有测试，因为自动登录有问题，不适合机载计算机使用（截止2020.4.14）
 	2 Firmware源码只能放在~/catkin_ws/src/下，别的地方都不行，测了两天只得到这个结果
 	3 model的显示有问题，激光雷达的蓝线不显示但是有数据，回学校以后可以看下以前是怎么做的
+	4 下下来以后最好工程文件夹改名，从px4_indoor_navigation改成px4_indoor，不然得进文件一个个改
 
 #	几个参考
 	为什么在ubuntu 18.04.2上编译会失败
