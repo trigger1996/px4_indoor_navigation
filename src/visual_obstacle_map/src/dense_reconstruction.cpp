@@ -12,6 +12,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <dynamic_reconfigure/server.h>
 #include <stereo_dense_reconstruction/CamToRobotCalibParamsConfig.h>
+#include <iostream>
 #include <fstream>
 #include <ctime>
 #include <opencv2/opencv.hpp>
@@ -27,6 +28,10 @@ Mat XR, XT, Q, P1, P2,R_downward,T_downward;
 Mat R1, R2, K1, K2, D1, D2, R;
 Mat lmapx, lmapy, rmapx, rmapy;
 Vec3d T;
+
+/// ADDED FOR ROSLAUNCH INTEGRATION
+bool is_display_publishing_index = false;
+std::string src_prefix = "";       // "/home/ghost/catkin_ws_ros/src/px4_indoor/src/visual_obstacle_map/"
 
 stereo_dense_reconstruction::CamToRobotCalibParamsConfig config;
 FileStorage calib_file;
@@ -423,7 +428,8 @@ void imgCallback(const sensor_msgs::ImageConstPtr& msg_left, const sensor_msgs::
 
   }
 
-  cout<<"Publishing pointcloud, index: "<<log_index<<endl;
+  if (is_display_publishing_index)
+      cout << "Publishing pointcloud, index: " << log_index << endl;
 
   publishPointCloud(img_left_color, dmap, stereo_pair_id);
 
@@ -446,10 +452,10 @@ void findRectificationMap(Size finalSize) {
   
   cv::stereoRectify(K1, D1, K2, D2, calib_img_size, R, Mat(T), R1, R2, P1, P2, Q,
           CV_CALIB_ZERO_DISPARITY, 0, finalSize, &validRoi[0], &validRoi[1]);
-  
+
   cv::initUndistortRectifyMap(K1, D1, R1, P1, finalSize, CV_32F, lmapx, lmapy);
   cv::initUndistortRectifyMap(K2, D2, R2, P2, finalSize, CV_32F, rmapx, rmapy);
-  
+
   cout << "Done rectification" << endl;
 }
 
@@ -462,7 +468,7 @@ void paramsCallback(stereo_dense_reconstruction::CamToRobotCalibParamsConfig &co
 
 int main(int argc, char** argv) {
 
-    if(argc != 2)
+    if(argc < 2)
     {
         cout<<"YOU NEED TO SPECIFY CONFIG PATH!"<<endl;
         return 0;
@@ -557,12 +563,22 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "gi_depth_estimation");
     ros::NodeHandle nh;
+    ros::NodeHandle private_nh("dense_reconstruction");
     image_transport::ImageTransport it(nh);
+
+    /// Added for fixing calibration file name
+    private_nh.getParam("src_prefix", src_prefix);
+    private_nh.getParam("is_display_publishing_index", is_display_publishing_index);
+    calib_file_name = src_prefix + calib_file_name;
+
+    cout << "[Px4 ndoor] is_display_publishing_index: " << is_display_publishing_index << endl;
+    cout << "[Px4 ndoor] calib_file_path: " << calib_file_name << endl;
 
     disparity_method = method;
 
     calib_img_size = Size(calib_width, calib_height);
     out_img_size = Size(out_width, out_height);
+
 
     calib_file = FileStorage(calib_file_name, FileStorage::READ);
     calib_file["K1"] >> K1;

@@ -76,11 +76,12 @@
 
 		GAAS课程4的用不了，因为里面的模型不是所有Gazebo都有，所以决定自己重画一个
 		下载Gazebo模型
-		https://blog.csdn.net/qq_40213457/article/details/81021562
-		链接：http://pan.baidu.com/s/1pKaeg0F 密码：cmxc （来自rosclub.cn）
-		或是下载https://bitbucket.org/osrf/gazebo_models/downloads/ (ExBot ROS专区，网友提醒)
+                    https://gitee.com/trigger1996/gazebo_models
 		这里完成下载后，model在~/src/Gazebo/model内
-		
+
+                现在默认整合到submodule里了，所以直接通过
+                    git submodule update --init --recursive
+                更新就可以不用做上一步
 		
 		修改～/.bashrc，在最后加一行
 			export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/catkin_ws_ros/src/px4_indoor/gazebo_models
@@ -88,6 +89,10 @@
 
 		本次实验是在有GPS情况下完成，以减少复杂度
 
+
+
+                如果gazebo出问题，如spawn_vehicle啥的失败
+                直接删一下~/.gazebo内所有log文件
 
 
 ##	7 自定path planning
