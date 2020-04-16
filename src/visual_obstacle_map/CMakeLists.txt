@@ -20,8 +20,8 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 #find_package(Boost 1.54.0 COMPONENTS system filesystem program_options REQUIRED)
 find_package(  Boost REQUIRED COMPONENTS filesystem )
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
 include_directories(
     ${OpenCV_INCLUDE_DIRS}
@@ -50,8 +50,6 @@ target_link_libraries(pcl_helper
 add_executable(dense_reconstruction
 	src/visual_obstacle_map/src/dense_reconstruction.cpp
     )
-
-message("2333333333333333333333333333333333333333333333"  ${image_transport_LIBRARIES})
 
 target_link_libraries(dense_reconstruction
          ${OpenCV_LIBS}
