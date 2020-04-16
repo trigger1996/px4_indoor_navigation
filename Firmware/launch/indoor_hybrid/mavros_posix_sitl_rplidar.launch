@@ -46,7 +46,7 @@
         <arg name="respawn_gazebo" value="$(arg respawn_gazebo)"/>
     </include>
     <!-- MAVROS -->
-    <include file="$(find mavros)/launch/px4.launch">
+    <include file="$(find px4)/launch/indoor_hybrid/mavros/px4.launch">
         <!-- GCS link is provided by SITL -->
         <arg name="gcs_url" value=""/>
         <arg name="fcu_url" value="$(arg fcu_url)"/>
@@ -54,7 +54,7 @@
     </include>
 
     <!-- Message Relay -->
-    <node name="px4_indoor_topic_relay"
+        <node name="px4_indoor_topic_relay"
           pkg="px4_indoor"
           type="px4_indoor_topic_relay"
           args=""
@@ -66,7 +66,7 @@
     <node name="cartographer_node"
           pkg="cartographer_ros"
           type="cartographer_node"
-          args="-configuration_directory $(find px4)/launch/indoor_cartographer/configs -configuration_basename rplidar_gazebo.lua"
+          args="-configuration_directory $(find px4)/launch/indoor_hybrid/configs -configuration_basename rplidar_gazebo.lua"
           output="screen">
     </node>
     <node name="cartographer_occupancy_grid_node"
@@ -85,7 +85,7 @@
 
     <!-- RVIZ -->
     <node name="rviz" pkg="rviz" type="rviz" required="true"
-          args="-d $(find px4)/launch/indoor_cartographer/configs/rplidar_cartographer.rviz" >
+          args="-d $(find px4)/launch/indoor_hybrid/configs/rplidar_cartographer.rviz" >
     </node>
 
 </launch>

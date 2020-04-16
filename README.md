@@ -59,7 +59,15 @@
 
 ##	5 Cartographer + VSLAM
 
-		TODO
+		Terminal 1 (Gazebo)
+			cd ~/catkin_ws/src/Firmware
+			roslaunch launch/indoor_hybrid/mavros_posix_sitl_rplidar_no_gps.launch
+
+		Terminal 2 (VSLAM)
+			~/catkin_ws_ros/src/px4_indoor/GAAS/software/SLAM/ygz_slam_ros
+
+		Terminal 3 (Key manpulation)
+			rosrun px4_indoor px4_indoor_key_control
 
 ##	6 GAAS课程4
 
@@ -69,12 +77,12 @@
 
 		TODO
 
-#已知问题
+#	已知问题
 	1 当前只有Ubuntu 18.04.4通过测试，老的18.04.2不知道为什么不行，18.04.3没有测试，因为自动登录有问题，不适合机载计算机使用（截止2020.4.14）
 	2 Firmware源码只能放在~/catkin_ws/src/下，别的地方都不行，测了两天只得到这个结果
 	3 model的显示有问题，激光雷达的蓝线不显示但是有数据，回学校以后可以看下以前是怎么做的
 
-#几个参考
+#	几个参考
 	为什么在ubuntu 18.04.2上编译会失败
 		估计是模型没有编译通过
 		模型通过gazebo和mavros交互，所以模型没过自然会造成系统爆炸
@@ -95,6 +103,7 @@
 	rostopic
 		rostopic list
 		rostopic echo
+                rostopic type
 		rqt_graph
 	TF
 		https://www.cnblogs.com/CZM-/p/5879845.html
@@ -103,6 +112,19 @@
 		rosrun tf view_frames  
 
 		<node pkg="tf" type="static_transform_publisher" name="join_laser" args="0 0 0 0 0 0 base_link laser 10" />
+
+	如何使用rosparam
+		https://blog.csdn.net/u014695839/article/details/78348600
+		编程看网页
+		命令看下面
+		Commands:
+			rosparam set	    set parameter                 设置参数
+			rosparam get	    get parameter                 获得参数值
+			rosparam load	    load parameters from file     从文件中加载参数到参数服务器
+			rosparam dump       dump parameters to file       将参数服务器中的参数写入到文件
+			rosparam delete     delete parameter              删除参数
+			rosparam list       list parameter names          列出参数服务器中的参数
+
 
 	如何使用cartographer
 		https://ardupilot.org/dev/docs/ros-cartographer-slam.html

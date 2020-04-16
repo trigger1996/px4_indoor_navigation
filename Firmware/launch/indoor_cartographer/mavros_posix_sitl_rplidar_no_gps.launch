@@ -54,7 +54,7 @@
     </include>
 
     <!-- Message Relay -->
-        <node name="px4_indoor_topic_relay"
+    <node name="px4_indoor_topic_relay"
           pkg="px4_indoor"
           type="px4_indoor_topic_relay"
           args=""
