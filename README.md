@@ -155,6 +155,23 @@
 			rosparam list       list parameter names          列出参数服务器中的参数
 
 
+		http://wiki.ros.org/rospy_tutorials/Tutorials/Parameters
+		Python下
+			# get a global parameter
+			rospy.get_param('/global_param_name')
+
+			# get a parameter from our parent namespace
+			rospy.get_param('param_name')
+
+			# get a parameter from our private namespace
+			rospy.get_param('~private_param_name')
+
+			You can also specify a default value if the parameter doesn't exist:
+
+			rospy.get_param('foo', 'default_value')
+
+		注意~后绝对不能加/
+
 	如何使用cartographer
 		https://ardupilot.org/dev/docs/ros-cartographer-slam.html
 		https://blog.csdn.net/qq_38649880/article/details/88372390

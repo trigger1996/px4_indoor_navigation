@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- MAVROS posix SITL environment launch script -->
+    <!-- launches MAVROS, PX4 SITL, Gazebo environment, and spawns vehicle -->
+    <!-- vehicle pose -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="R" default="0"/>
+    <arg name="P" default="0"/>
+    <arg name="Y" default="0"/>
+    <!-- vehicle model and world -->
+    <arg name="est" default="ekf2"/>
+    <arg name="vehicle" default="iris_stereo_rplidar"/>
+    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/simple_indoor_world_1.world"/>
+    <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+    <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
+    <!-- gazebo configs -->
+    <arg name="gui" default="true"/>
+    <arg name="debug" default="false"/>
+    <arg name="verbose" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="respawn_gazebo" default="false"/>
+    <!-- MAVROS configs -->
+    <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+    <arg name="respawn_mavros" default="false"/>
+    <!-- PX4 configs -->
+    <arg name="interactive" default="true"/>
+    <!-- PX4 SITL and Gazebo -->
+    <include file="$(find px4)/launch/posix_sitl.launch">
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="R" value="$(arg R)"/>
+        <arg name="P" value="$(arg P)"/>
+        <arg name="Y" value="$(arg Y)"/>
+        <arg name="world" value="$(arg world)"/>
+        <arg name="vehicle" value="$(arg vehicle)"/>
+        <arg name="sdf" value="$(arg sdf)"/>
+        <arg name="rcS" value="$(arg rcS)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="interactive" value="$(arg interactive)"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="respawn_gazebo" value="$(arg respawn_gazebo)"/>
+    </include>
+    <!-- MAVROS -->
+    <include file="$(find mavros)/launch/px4.launch">
+        <!-- GCS link is provided by SITL -->
+        <arg name="gcs_url" value=""/>
+        <arg name="fcu_url" value="$(arg fcu_url)"/>
+        <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+    </include>
+
+    <!--Point Cloud Reconstruction-->
+    <arg  name="config_file_path" value="$(find px4_indoor)/src/visual_obstacle_map/config.yaml"/>
+    <node name="dense_reconstruction"
+          pkg="px4_indoor"
+          type="dense_reconstruction"
+          args="$(arg config_file_path)"
+          output="screen">
+          <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
+          <param name="is_display_publishing_index" type="int" value="0" />
+    </node>
+    <!-- Point Cloud Insertion, one should be chosen between these two -->
+    <!--node name="match_pointcloud_and_slam_pose"
+          pkg="px4_indoor"
+          type="match_pointcloud_and_slam_pose"
+          args=""
+          output="screen">
+	  <param name="is_display_pose" type="int" value="0" />
+    </node-->
+    <node name="match_pointcloud_and_slam_pose2"
+          pkg="px4_indoor"
+          type="match_pointcloud_and_slam_pose2"
+          args=""
+          output="screen">
+	  <param name="is_display_pose" type="int" value="0" />
+	  <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
+    </node>
+
+    <!-- Octomap -->
+    <include file="$(find px4)/launch/indoor_automatic/configs/octomap_mapping.launch">
+    </include>
+
+    <!-- MAVROS Offboard -->
+    <node name="px4_mavros_run"
+          pkg="px4_indoor"
+          type="px4_mavros_run.py"
+          args=""
+          output="screen">
+    </node>
+
+    <!-- Path Planning -->
+    <node name="navigator"
+          pkg="px4_indoor"
+          type="Navigator.py"
+          args=""
+          output="screen">
+        <param name="target_x" type="double" value="12" />
+        <param name="target_y" type="double" value="1" />
+        <param name="target_z" type="double" value="1.5" />
+    </node>
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+          args="-d $(find px4)/launch/indoor_automatic/configs/indoor_automatic.rviz" >
+    </node>
+
+</launch>

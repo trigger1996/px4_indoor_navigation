@@ -445,8 +445,14 @@ class Navigator:
 if __name__ == '__main__':
     nav = Navigator()
 
+    target_x = rospy.get_param('~target_x', 10)
+    target_y = rospy.get_param('~target_y', 0)
+    target_z = rospy.get_param('~target_z', 2.5)
+
+    print("[Px4 indoor] target position: ", [target_x, target_y, target_z])
+
     #FLU meters.
-    nav.set_target_postion((10, 0, 2.5))
+    nav.set_target_postion((target_x, target_y, target_z))
     nav.keep_navigating()
 
 
