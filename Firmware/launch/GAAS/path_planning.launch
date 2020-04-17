@@ -77,6 +77,7 @@
           args=""
           output="screen">
 	  <param name="is_display_pose" type="int" value="0" />
+	  <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
     </node>
 
     <!-- Octomap -->
@@ -84,20 +85,20 @@
     </include>
 
     <!-- MAVROS Offboard -->
-    <!--node name="px4_mavros_run"
+    <node name="px4_mavros_run"
           pkg="px4_indoor"
           type="px4_mavros_run.py"
           args=""
           output="screen">
-    </node-->
+    </node>
 
     <!-- Path Planning -->
-    <!--node name="navigator"
+    <node name="navigator"
           pkg="px4_indoor"
           type="Navigator.py"
           args=""
           output="screen">
-    </node-->
+    </node>
 
     <!-- RVIZ -->
     <node name="rviz" pkg="rviz" type="rviz" required="true"

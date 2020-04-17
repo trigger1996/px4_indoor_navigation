@@ -47,16 +47,16 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
     Eigen::Quaterniond q(pose.pose.orientation.w,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z);
     Eigen::Matrix3d mat = q.toRotationMatrix();
 
-    if (is_display_pose) {
-        for (int i = 0;i<3;i++)
+    for (int i = 0;i<3;i++)
+    {
+        for(int j =0 ;j<3;j++)
         {
-            for(int j =0 ;j<3;j++)
-            {
-                transform(i,j) = mat(i,j);
+            transform(i,j) = mat(i,j);
+            if (is_display_pose)
                 std::cout<<transform(i,j)<<"	|	";
-            }
-            std::cout <<std::endl;
         }
+        if (is_display_pose)
+            std::cout <<std::endl;
     }
     
 

@@ -74,6 +74,9 @@ class Px4Controller:
 
         #print ("self.cur_target_pose:", self.cur_target_pose, type(self.cur_target_pose))
 
+        # wait a few seconds for gps initialization
+        time.sleep(3)
+
         for i in range(10):
             self.local_target_pub.publish(self.cur_target_pose)
             self.arm_state = self.arm()

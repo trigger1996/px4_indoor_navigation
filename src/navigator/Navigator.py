@@ -121,6 +121,12 @@ class Navigator:
         # for debug:
         #self.algo = astar.astar.A_star((1,0,0))
 
+        ### Added, wait for several seconds for mavros switching to offboard
+        for i in range(0, 20):
+            if self.mavros_state == "OFFBOARD":
+                break
+            time.sleep(1)
+
         while self.mavros_state == "OFFBOARD" and not(rospy.is_shutdown()):
 
             # print ('Inside outer loop!')

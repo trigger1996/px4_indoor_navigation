@@ -36,6 +36,9 @@ ros::Publisher output_cloud_pub;
 
 pcl_helper* mpPCL_helper;
 
+int is_display_pose = false;
+string helper_file_name = "config.yaml";
+string src_prefix = "";
 
 void Pose_callback(const geometry_msgs::PoseStamped& temp_pose)
 {
@@ -49,7 +52,8 @@ void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
     sensor_msgs::PointCloud pc;
     bool result = sensor_msgs::convertPointCloud2ToPointCloud(temp_pc, pc);
 
-    cout<<"point cloud callback"<<endl;
+    if (is_display_pose)
+      cout<<"point cloud callback"<<endl;
 
     cur_pointcloud = pc;
 
@@ -62,7 +66,8 @@ void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
         for(int j =0 ;j<3;j++)
         {
             transform(i,j) = mat(i,j);
-            std::cout<<transform(i,j)<<"	|	";
+            if (is_display_pose)
+                std::cout<<transform(i,j)<<"	|	";
         }
     }
 
@@ -70,11 +75,13 @@ void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
     transform(1,3) = cur_pose.pose.position.y;
     transform(2,3) = cur_pose.pose.position.z;
 
-    for(int k=0;k<3;k++)
-    {
-      std::cout<<transform(k,3)<<" |";
+    if (is_display_pose) {
+        for(int k=0;k<3;k++)
+        {
+          std::cout<<transform(k,3)<<" |";
+        }
+        std::cout<<"ENDL"<<std::endl;
     }
-    std::cout<<"ENDL"<<std::endl;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr original_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto iter = cur_pointcloud.points.begin(); iter!=cur_pointcloud.points.end(); ++iter)
@@ -93,9 +100,13 @@ void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
     int UseRadiusOutlierRemoval = 1;
     if(UseRadiusOutlierRemoval)
     {
-        cout<<"original_cloud before: "<<*original_cloud<<endl;
+        if (is_display_pose)
+            cout<<"original_cloud before: "<<*original_cloud<<endl;
+
         original_cloud = mpPCL_helper->PCLRadiusOutlierRemoval(original_cloud);
-        cout<<"original_cloud after: "<<*original_cloud<<endl;
+
+        if (is_display_pose)
+            cout<<"original_cloud after: "<<*original_cloud<<endl;
     }
 
     // option 2: PCLStatisticalOutlierFilter
@@ -152,10 +163,17 @@ int main(int argc,char** argv)
     string node_name = "pointcloud_to_global_frame";
     ros::init(argc, argv, node_name);
     ros::NodeHandle nh;
+    ros::NodeHandle private_nh("match_pointcloud_and_slam_pose2");
 
-    mpPCL_helper = new pcl_helper("config.yaml");
+    private_nh.getParam("is_display_pose", is_display_pose);
+    private_nh.getParam("src_prefix", src_prefix);
 
-    cout<<"Node initialized as: "<<node_name<<endl;
+    helper_file_name = src_prefix + helper_file_name;
+    mpPCL_helper = new pcl_helper(helper_file_name);
+
+    cout << "Node initialized as: " << node_name << endl;
+    cout << "[Px4 indoor] is_display_pose:  " << is_display_pose  << endl;
+    cout << "[Px4 indoor] helper_file_path: " << helper_file_name << endl;
 
     output_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud_in",1);
 

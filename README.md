@@ -74,7 +74,6 @@
 
 ##	6 GAAS课程4
 
-		GAAS课程4的用不了，因为里面的模型不是所有Gazebo都有，所以决定自己重画一个
 		下载Gazebo模型
                     https://gitee.com/trigger1996/gazebo_models
 		这里完成下载后，model在~/src/Gazebo/model内

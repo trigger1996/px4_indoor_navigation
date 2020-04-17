@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /MarkerArray2
       Splitter Ratio: 0.5
     Tree Height: 549
   - Class: rviz/Selection
@@ -90,6 +91,14 @@ Visualization Manager:
         map: true
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /gi/navi_path_plan
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -118,25 +127,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 42.044227600097656
+      Distance: 27.036916732788086
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.5876898765563965
-        Y: -0.1457585096359253
-        Z: 3.9252829551696777
+        X: 2.5691518783569336
+        Y: -0.6096091866493225
+        Z: 6.838987350463867
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.36479732394218445
+      Pitch: 0.5647971630096436
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.7203991413116455
+      Yaw: 3.8253986835479736
     Saved: ~
 Window Geometry:
   Displays:
