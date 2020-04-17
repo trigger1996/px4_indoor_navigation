@@ -86,18 +86,25 @@
 		修改～/.bashrc，在最后加一行
 			export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/catkin_ws_ros/src/px4_indoor/gazebo_models
 
+		Terminal 1
+			cd ~/catkin_ws/src/Firmware
+			roslaunch launch/GAAS/path_planning.launch
+
 
 		本次实验是在有GPS情况下完成，以减少复杂度
-
-
-
                 如果gazebo出问题，如spawn_vehicle啥的失败
                 直接删一下~/.gazebo内所有log文件
 
 
-##	7 自定path planning
+##	7 自定 gps-denied path planning
 
 		TODO
+
+#	如何调试
+	这份代码的整合度很高，原来GAAS等等其他需要3-4个终端才能开完的代码在这边一个终端全部开完
+	如何确认这份代码能用？
+	按照上面的数字顺序一点点运行代码以确定各个模块的好坏
+	如果某个roslaunch文件有问题，则可分模块注释以检查性能
 
 #	已知问题
 	1 当前只有Ubuntu 18.04.4通过测试，老的18.04.2不知道为什么不行，18.04.3没有测试，因为自动登录有问题，不适合机载计算机使用（截止2020.4.14）
@@ -162,6 +169,14 @@
 		实体机：
 			多一个rplidar_ros
 
+        如何用rosrun或者roslaunch启动python代码
+            https://answers.ros.org/question/56640/calling-a-python-script-with-rosrun/
+
+            First, make sure the python script is executable
+                (chmod +x mypythonscript.py).
+
+            Next, make sure you have a shebang line at the top of the script that looks like
+                #!/usr/bin/env python.
 
 	如何使用gazebo_plugin自己设计传感器
 		https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/src/gazebo_ros_range.cpp
@@ -200,6 +215,10 @@
 		今天试了一把，误将pose类型（而非posestamped）类型的数据传入/mavros/vision_pose/pose内
 		可以收，但是反馈的/mavros/altitude高度数据有问题，导致飞机可以解锁，但是无法起飞
 		所以实体机到时候要注意一下高度
+
+#	关于真机设计
+	https://www.flyeval.com/
+	https://www.flyeval.com/recalc.html
 
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 

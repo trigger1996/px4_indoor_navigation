@@ -59,9 +59,9 @@
           type="px4_indoor_topic_relay"
           args=""
           output="screen">
-          <param name="is_use_vslam_data" value="1"    />  
-          <param name="data_fusion_K_xy"  value="0.75" />
-          <param name="data_fusion_K_z"   value="0.6"  />
+          <param name="is_use_vslam_data" type="int"    value="1"    />  
+          <param name="data_fusion_K_xy"  type="double" value="0.75" />
+          <param name="data_fusion_K_z"   type="double" value="0.6"  />
     </node>
 
     <!-- Cartographer SLAM -->

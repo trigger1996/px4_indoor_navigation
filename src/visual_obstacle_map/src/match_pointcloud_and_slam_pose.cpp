@@ -30,9 +30,12 @@ using namespace std;
 
 ros::Publisher output_cloud_pub;
 
+int is_display_pose = true;
+
 void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::PoseStamped::ConstPtr ppose)
 {
-    std::cout<<"Point Clound Sync callback"<<std::endl;
+    if (is_display_pose)
+        std::cout<<"Point Clound Sync callback"<<std::endl;
     
     sensor_msgs::PointCloud2 pc2 = * ppc;
 
@@ -44,14 +47,16 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
     Eigen::Quaterniond q(pose.pose.orientation.w,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z);
     Eigen::Matrix3d mat = q.toRotationMatrix();
 
-    for (int i = 0;i<3;i++)
-    {
-        for(int j =0 ;j<3;j++)
+    if (is_display_pose) {
+        for (int i = 0;i<3;i++)
         {
-            transform(i,j) = mat(i,j);
-            std::cout<<transform(i,j)<<"	|	";
+            for(int j =0 ;j<3;j++)
+            {
+                transform(i,j) = mat(i,j);
+                std::cout<<transform(i,j)<<"	|	";
+            }
+            std::cout <<std::endl;
         }
-        std::cout <<std::endl;
     }
     
 
@@ -59,12 +64,13 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
     transform(1,3) = pose.pose.position.y;
     transform(2,3) = pose.pose.position.z;
 
-
-    for(int k=0; k<3; k++)
-    {
-      std::cout<<transform(k,3)<<" |";
+    if (is_display_pose) {
+        for(int k=0; k<3; k++)
+        {
+          std::cout<<transform(k,3)<<" |";
+        }
+        std::cout<<"ENDL"<<std::endl;
     }
-    std::cout<<"ENDL"<<std::endl;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr original_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     for(auto iter = pc.points.begin();iter!=pc.points.end();++iter)
@@ -100,6 +106,11 @@ int main(int argc,char** argv)
     string node_name = "pointcloud_to_global_frame";
     ros::init(argc, argv, node_name);
     ros::NodeHandle nh;
+    ros::NodeHandle private_nh("match_pointcloud_and_slam_pose");
+
+    private_nh.getParam("is_display_pose", is_display_pose);
+
+    std::cout << "[Px4 indoor] is_display_point_cloud_insertion_pose: " << is_display_pose << endl;
 
     output_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud_in",1);
 

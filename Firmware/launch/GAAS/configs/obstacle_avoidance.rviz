@@ -82,6 +82,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /occupied_cells_vis_array
+      Name: MarkerArray
+      Namespaces:
+        map: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -110,25 +118,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 9.034516334533691
+      Distance: 42.044227600097656
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.627674102783203
-        Y: -1.5276423692703247
-        Z: 2.6900596618652344
+        X: 2.5876898765563965
+        Y: -0.1457585096359253
+        Z: 3.9252829551696777
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5147973299026489
+      Pitch: 0.36479732394218445
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.700397253036499
+      Yaw: 3.7203991413116455
     Saved: ~
 Window Geometry:
   Displays:
@@ -147,4 +155,4 @@ Window Geometry:
     collapsed: false
   Width: 1200
   X: 477
-  Y: 39
+  Y: 27

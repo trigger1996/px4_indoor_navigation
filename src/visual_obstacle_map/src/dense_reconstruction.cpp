@@ -30,7 +30,7 @@ Mat lmapx, lmapy, rmapx, rmapy;
 Vec3d T;
 
 /// ADDED FOR ROSLAUNCH INTEGRATION
-bool is_display_publishing_index = false;
+int is_display_publishing_index = true;
 std::string src_prefix = "";       // "/home/ghost/catkin_ws_ros/src/px4_indoor/src/visual_obstacle_map/"
 
 stereo_dense_reconstruction::CamToRobotCalibParamsConfig config;
@@ -571,8 +571,8 @@ int main(int argc, char** argv) {
     private_nh.getParam("is_display_publishing_index", is_display_publishing_index);
     calib_file_name = src_prefix + calib_file_name;
 
-    cout << "[Px4 ndoor] is_display_publishing_index: " << is_display_publishing_index << endl;
-    cout << "[Px4 ndoor] calib_file_path: " << calib_file_name << endl;
+    cout << "[Px4 indoor] is_display_publishing_index: " << is_display_publishing_index << endl;
+    cout << "[Px4 indoor] calib_file_path: " << calib_file_name << endl;
 
     disparity_method = method;
 

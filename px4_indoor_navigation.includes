@@ -8,3 +8,6 @@ src/visual_obstacle_map/cfg/cpp/Obstacle_Map
 src/visual_obstacle_map/include
 src/key_rc
 src/visual_obstacle_map
+src/navigator
+src/navigator/astar
+src/navigator/path_optimization
