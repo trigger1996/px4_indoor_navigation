@@ -29,6 +29,9 @@ Mat R1, R2, K1, K2, D1, D2, R;
 Mat lmapx, lmapy, rmapx, rmapy;
 Vec3d T;
 
+/// ADDED FOR LASER POINT CLOUD INTEGRATION
+int is_integrate_laser = false;
+
 /// ADDED FOR ROSLAUNCH INTEGRATION
 int is_display_publishing_index = true;
 std::string src_prefix = "";       // "/home/ghost/catkin_ws_ros/src/px4_indoor/src/visual_obstacle_map/"
@@ -56,6 +59,13 @@ float distanceMax, distanceMin;
 int conductStereoRectify, max_x, min_x, max_y, min_y;
 
 pcl_helper* mpPCL_helper;
+
+sensor_msgs::PointCloud2 laser_pc;
+bool is_laser_pc_updated = false;
+void laser_pc_callback(const sensor_msgs::PointCloud2::ConstPtr& msg){
+    laser_pc = *msg;
+    is_laser_pc_updated = true;
+}
 
 Mat composeRotationCamToRobot(float x, float y, float z) {
 
@@ -200,6 +210,17 @@ void publishPointCloud(Mat& img_left, Mat& dmap, int stereo_pair_id) {
     }
 
     log_index ++;
+
+
+    /// ADDED FOR LASER INTEGRATION
+    if (is_laser_pc_updated) {
+        sensor_msgs::PointCloud laser_pc1;
+
+        sensor_msgs::convertPointCloud2ToPointCloud(laser_pc, laser_pc1);
+        int point_num = laser_pc1.points.size();
+        for (int i = 0; i < point_num; i++)
+            pc.points.push_back(laser_pc1.points[i]);
+    }
 
     sensor_msgs::PointCloud2 pc2;
 
@@ -567,10 +588,12 @@ int main(int argc, char** argv) {
     image_transport::ImageTransport it(nh);
 
     /// Added for fixing calibration file name
+    private_nh.getParam("is_integrate_laser", is_integrate_laser);
     private_nh.getParam("src_prefix", src_prefix);
     private_nh.getParam("is_display_publishing_index", is_display_publishing_index);
     calib_file_name = src_prefix + calib_file_name;
 
+    cout << "[Px4 indoor] is_integrate_laser: " << is_integrate_laser << endl;
     cout << "[Px4 indoor] is_display_publishing_index: " << is_display_publishing_index << endl;
     cout << "[Px4 indoor] calib_file_path: " << calib_file_name << endl;
 
@@ -614,6 +637,9 @@ int main(int argc, char** argv) {
     //  message_filters::Synchronizer<SyncPolicy> sync2(SyncPolicy(10), sub_img_down_left, sub_img_down_right);
     //  sync2.registerCallback(boost::bind(&imgCallback, _1, _2,image_id));
 
+    /// Laser point cloud
+    ros::Subscriber laser_pc_sub = nh.subscribe<sensor_msgs::PointCloud2>
+            ("scan_matched_points2", 10, laser_pc_callback);
 
     dynamic_reconfigure::Server<stereo_dense_reconstruction::CamToRobotCalibParamsConfig> server;
     dynamic_reconfigure::Server<stereo_dense_reconstruction::CamToRobotCalibParamsConfig>::CallbackType f;
