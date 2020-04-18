@@ -96,6 +96,7 @@
           <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
           <param name="is_display_publishing_index" type="int" value="0" />
           <param name="is_integrate_laser"          type="int" value="1" />
+          <param name="is_project_laser"            type="int" value="0" />
     </node>
     <!-- Point Cloud Insertion, one should be chosen between these two -->
     <!--node name="match_pointcloud_and_slam_pose"

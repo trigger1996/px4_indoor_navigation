@@ -7,6 +7,7 @@
 #include <sensor_msgs/ChannelFloat32.h>
 #include <sensor_msgs/PointField.h>
 #include <geometry_msgs/Point32.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -18,6 +19,8 @@
 #include <opencv2/opencv.hpp>
 #include "popt_pp.h"
 #include "pcl_helper.h"
+
+#include "quat_2_dcm.hpp"
 
 
 using namespace cv;
@@ -31,6 +34,7 @@ Vec3d T;
 
 /// ADDED FOR LASER POINT CLOUD INTEGRATION
 int is_integrate_laser = false;
+int is_project_laser   = false;
 
 /// ADDED FOR ROSLAUNCH INTEGRATION
 int is_display_publishing_index = true;
@@ -65,6 +69,13 @@ bool is_laser_pc_updated = false;
 void laser_pc_callback(const sensor_msgs::PointCloud2::ConstPtr& msg){
     laser_pc = *msg;
     is_laser_pc_updated = true;
+}
+
+geometry_msgs::PoseStamped mav_pose;
+bool is_mav_pose_updated = false;
+void mav_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
+    mav_pose = *msg;
+    is_mav_pose_updated = true;
 }
 
 Mat composeRotationCamToRobot(float x, float y, float z) {
@@ -213,13 +224,43 @@ void publishPointCloud(Mat& img_left, Mat& dmap, int stereo_pair_id) {
 
 
     /// ADDED FOR LASER INTEGRATION
-    if (is_laser_pc_updated) {
-        sensor_msgs::PointCloud laser_pc1;
+    if (is_integrate_laser) {
+        if (is_project_laser) {
+            if (is_laser_pc_updated && is_mav_pose_updated) {
+                sensor_msgs::PointCloud laser_pc1;
+                sensor_msgs::convertPointCloud2ToPointCloud(laser_pc, laser_pc1);
+                int point_num = laser_pc1.points.size();
+                double m[3][3] = { 0 };
 
-        sensor_msgs::convertPointCloud2ToPointCloud(laser_pc, laser_pc1);
-        int point_num = laser_pc1.points.size();
-        for (int i = 0; i < point_num; i++)
-            pc.points.push_back(laser_pc1.points[i]);
+                quat_2_dcm(mav_pose.pose.orientation, m);
+                for (int i = 0; i < point_num; i++) {
+                    geometry_msgs::Point32 pt;
+
+                    pt   = laser_pc1.points[i];
+                    pt.z = mav_pose.pose.position.z;
+                    pt   = xyz_rotation_dcm(pt, m);
+
+                    pc.points.push_back(pt);
+                }
+
+                is_laser_pc_updated = false;
+                is_mav_pose_updated = false;
+            }
+        }
+        else {
+            if (is_laser_pc_updated) {
+                sensor_msgs::PointCloud laser_pc1;
+
+                sensor_msgs::convertPointCloud2ToPointCloud(laser_pc, laser_pc1);
+                int point_num = laser_pc1.points.size();
+                for (int i = 0; i < point_num; i++)
+                    pc.points.push_back(laser_pc1.points[i]);
+
+                is_laser_pc_updated = false;
+            }
+        }
+
+
     }
 
     sensor_msgs::PointCloud2 pc2;
@@ -589,13 +630,16 @@ int main(int argc, char** argv) {
 
     /// Added for fixing calibration file name
     private_nh.getParam("is_integrate_laser", is_integrate_laser);
+    private_nh.getParam("is_project_laser", is_project_laser);
     private_nh.getParam("src_prefix", src_prefix);
     private_nh.getParam("is_display_publishing_index", is_display_publishing_index);
     calib_file_name = src_prefix + calib_file_name;
 
     cout << "[Px4 indoor] is_integrate_laser: " << is_integrate_laser << endl;
+    cout << "[Px4 indoor] is_project_laser: "   << is_project_laser   << endl;
     cout << "[Px4 indoor] is_display_publishing_index: " << is_display_publishing_index << endl;
     cout << "[Px4 indoor] calib_file_path: " << calib_file_name << endl;
+
 
     disparity_method = method;
 
@@ -640,6 +684,8 @@ int main(int argc, char** argv) {
     /// Laser point cloud
     ros::Subscriber laser_pc_sub = nh.subscribe<sensor_msgs::PointCloud2>
             ("scan_matched_points2", 10, laser_pc_callback);
+    ros::Subscriber mav_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>
+            ("/mavros/local_position/pose", 10, mav_pose_callback);
 
     dynamic_reconfigure::Server<stereo_dense_reconstruction::CamToRobotCalibParamsConfig> server;
     dynamic_reconfigure::Server<stereo_dense_reconstruction::CamToRobotCalibParamsConfig>::CallbackType f;
