@@ -20,7 +20,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 3.2
+        self.takeoff_height = 1.0
         self.local_enu_position = None
 
         self.cur_target_pose = None
@@ -75,7 +75,7 @@ class Px4Controller:
         #print ("self.cur_target_pose:", self.cur_target_pose, type(self.cur_target_pose))
 
         # wait a few seconds for gps initialization
-        time.sleep(3)
+        time.sleep(8)
 
         for i in range(10):
             self.local_target_pub.publish(self.cur_target_pose)

@@ -122,7 +122,7 @@ class Navigator:
         #self.algo = astar.astar.A_star((1,0,0))
 
         ### Added, wait for several seconds for mavros switching to offboard
-        for i in range(0, 20):
+        for i in range(0, 25):
             if self.mavros_state == "OFFBOARD":
                 break
             time.sleep(1)

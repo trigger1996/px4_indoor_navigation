@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /Submaps1
         - /PointCloud21
-        - /PointCloud22
       Splitter Ratio: 0.6006709933280945
     Tree Height: 462
   - Class: rviz/Selection
@@ -117,7 +116,7 @@ Visualization Manager:
       Submaps:
         All: true
         Trajectory 0:
-          0.20: true
+          0.89: true
           Value: true
       Topic: /submap_list
       Tracking frame: base_link
@@ -216,6 +215,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /gi/navi_path_plan
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 100; 100; 100
@@ -244,7 +251,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 9.200210571289062
+      Distance: 9.723409652709961
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
