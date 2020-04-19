@@ -20,7 +20,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 1.0
+        self.takeoff_height = 1.4           # alternative: 3.0 (outdoor), 1.0, 1.4, 1.6
         self.local_enu_position = None
 
         self.cur_target_pose = None

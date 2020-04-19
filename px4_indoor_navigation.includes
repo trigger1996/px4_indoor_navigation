@@ -1,5 +1,6 @@
 /usr/include
 /usr/local/include
+/usr/local/include/pcl-1.8
 /opt/ros/melodic/include
 src/visual_obstacle_map/src
 src/visual_obstacle_map/cfg/cpp/stereo_dense_reconstruction

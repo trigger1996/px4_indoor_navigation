@@ -46,6 +46,8 @@ param set SYS_AUTOSTART 4010
 param set SYS_MC_EST_GROUP 2
 param set SYS_RESTART_TYPE 2
 param set EKF2_AID_MASK 8
+param set MPC_TILTMAX_AIR 6.0
+param set MPC_TILTMAX_LND 6.0
 replay tryapplyparams
 simulator start -s
 tone_alarm start

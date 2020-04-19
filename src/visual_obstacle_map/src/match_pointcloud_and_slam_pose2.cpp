@@ -36,6 +36,7 @@ ros::Publisher output_cloud_pub;
 
 pcl_helper* mpPCL_helper;
 
+int is_integrate_laser = false;
 int is_display_pose = false;
 string helper_file_name = "config.yaml";
 string src_prefix = "";
@@ -45,6 +46,12 @@ void Pose_callback(const geometry_msgs::PoseStamped& temp_pose)
     cur_pose = temp_pose;
 }
 
+sensor_msgs::PointCloud2 laser_pc;
+bool is_laser_pc_updated = false;
+void laser_pc_callback(const sensor_msgs::PointCloud2::ConstPtr& msg){
+    laser_pc = *msg;
+    is_laser_pc_updated = true;
+}
 
 void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
 {
@@ -127,6 +134,26 @@ void PC_callback(const sensor_msgs::PointCloud2& temp_pc)
         pc_out.points.push_back(p);
     }
 
+    /// ADDED FOR POINT CLOUD UPDATED
+    if (is_integrate_laser) {
+        if (is_laser_pc_updated) {
+            sensor_msgs::PointCloud laser_pc1;
+            sensor_msgs::convertPointCloud2ToPointCloud(laser_pc, laser_pc1);
+            int point_num = laser_pc1.points.size();
+
+            // Assumed that laser point cloud is filtered
+            // so it is added to point cloud directly
+            for (int i = 0; i < point_num; i++) {
+                pcl::PointXYZ pt(laser_pc1.points[i].x,
+                                 laser_pc1.points[i].y,
+                                 laser_pc1.points[i].z + cur_pose.pose.position.z);
+                transformed_cloud->push_back(pt);
+            }
+
+            is_laser_pc_updated = false;
+        }
+    }
+
     sensor_msgs::PointCloud2 pc_out_pointcloud2;
     pcl::toROSMsg(*transformed_cloud, pc_out_pointcloud2);
     pc_out_pointcloud2.header.frame_id = "map";
@@ -165,6 +192,7 @@ int main(int argc,char** argv)
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("match_pointcloud_and_slam_pose2");
 
+    private_nh.getParam("is_integrate_laser", is_integrate_laser);
     private_nh.getParam("is_display_pose", is_display_pose);
     private_nh.getParam("src_prefix", src_prefix);
 
@@ -172,13 +200,16 @@ int main(int argc,char** argv)
     mpPCL_helper = new pcl_helper(helper_file_name);
 
     cout << "Node initialized as: " << node_name << endl;
-    cout << "[Px4 indoor] is_display_pose:  " << is_display_pose  << endl;
-    cout << "[Px4 indoor] helper_file_path: " << helper_file_name << endl;
+    cout << "[Px4 indoor] is_integrate_laser:  " << is_integrate_laser  << endl;
+    cout << "[Px4 indoor] is_display_pose:     " << is_display_pose  << endl;
+    cout << "[Px4 indoor] helper_file_path:    " << helper_file_name << endl;
 
     output_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/cloud_in",1);
 
     ros::Subscriber pc_sub = nh.subscribe("/camera/left/point_cloud2", 1, PC_callback);
     ros::Subscriber pose_sub = nh.subscribe("/mavros/local_position/pose", 100, Pose_callback);
+
+    ros::Subscriber laser_pc_sub = nh.subscribe("/scan_matched_points2", 10, laser_pc_callback);
 
     cout<<"sync_pc_callback 2"<<endl;
 

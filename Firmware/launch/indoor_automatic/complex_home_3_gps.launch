@@ -12,7 +12,7 @@
     <!-- vehicle model and world -->
     <arg name="est" default="ekf2"/>
     <arg name="vehicle" default="iris_stereo_rplidar"/>
-    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/complex_home_2.world"/>
+    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/complex_home_3.world"/>
     <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
     <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
     <!-- gazebo configs -->
@@ -133,9 +133,9 @@
           type="Navigator.py"
           args=""
           output="screen">
-        <param name="target_x" type="double" value="7" />
-        <param name="target_y" type="double" value="-2" />
-        <param name="target_z" type="double" value="1" />
+        <param name="target_x" type="double" value="14"  />
+        <param name="target_y" type="double" value="1"   />
+        <param name="target_z" type="double" value="1.6" />
     </node>
 
     <!-- RVIZ -->

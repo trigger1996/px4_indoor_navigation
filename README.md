@@ -129,6 +129,16 @@
 
           为什么没有去掉这个？因为在真机上可能会有位姿数据/mavros/local_position/pose这个数据读不出来的情况，这个数据不去掉主要是为了提醒调真机的时候注意这个问题
 
+#       使用的室内环境
+                自己画的几个
+                simple_environment
+                    简单的方框环境，用来测试slam效果的
+
+                complex_home_3
+                    室内环境无门窗，现在确定已经可以飞了
+
+                complex_home_2
+                    最难，飞机现在还不能钻门钻窗
 
 #	几个参考
 	为什么在ubuntu 18.04.2上编译会失败
@@ -254,6 +264,16 @@
 #	关于真机设计
 	https://www.flyeval.com/
 	https://www.flyeval.com/recalc.html
+
+#       关于真机设计之二
+        posix_config改了啥
+        有GPS
+            param set MPC_TILTMAX_AIR 6.0
+            param set MPC_TILTMAX_LND 6.0
+        无GPS
+            param set EKF2_AID_MASK 8
+            param set MPC_TILTMAX_AIR 6.0
+            param set MPC_TILTMAX_LND 6.0
 
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
