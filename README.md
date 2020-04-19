@@ -1,7 +1,22 @@
 #	使用大致流程
 
 	0 
-		git submodule update --init --recursive
+            git submodule update --init --recursive
+
+            将VSLAM移植到package内方便使用roslaunch启动
+                # 首先将GAAS内的ygz_slam_ros复制到src下
+                cp -r (path-to-px4_indoor)/GAAS/software/SLAM/ygz_slam_ros/ (path-to-px4_indoor)/src
+                # 然后将修改后的编译脚本扔进ygz_slam_ros文件夹内
+                cp -rf (path-to-px4_indoor)/ygz_slam_ros_replacements  (path-to-px4_indoor)/src/ygz_slam_ros/
+
+                cd (path-to-px4_indoor)/src/ygz_slam_ros/
+                sh generate.sh
+
+                笔者不知道命令写错没，没有实际测试，所以如果有问题建议手动操作 + 欢迎指出
+
+            # 文件结构见下
+            cd ~/catkin_ws_ros
+            catkin_make -j4 -l4
 
 	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
@@ -96,6 +111,13 @@
 
 
 ##	7 自定 gps-denied path planning
+
+                Terminal 1
+                        cd ~/catkin_ws/src/Firmware
+                        roslaunch launch/indoor_automatic/complex_home_3_gps.launch
+                直接选一个roslaunch开就好了
+                现在除了simple_environment没有开自动导航，为了测试以外，其他的理论上都是调过的
+
 
 		TODO:
 			px4_mavros_run的默认起飞高度对激光来说太高了

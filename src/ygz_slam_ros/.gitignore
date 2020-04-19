@@ -1,0 +1,12 @@
+image/
+build/
+.idea
+.kdev4/
+database.bin
+MapSerialization.bin
+*.csv
+*.kdev4
+./Thirdparty/DBow3/build
+./Thirdparty/fast/build
+*.log
+*.csv

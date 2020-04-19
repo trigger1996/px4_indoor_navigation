@@ -166,7 +166,11 @@ target_link_libraries(${PROJECT_NAME}_topic_relay
     ${catkin_LIBRARIES}
 )
 
+# Octomapping Pack
 include(src/visual_obstacle_map/CMakeLists.txt)
+
+# VSLAM Pack
+include(src/ygz_slam_ros/CMakeLists.txt)
 
 #############
 ## Install ##
