@@ -19,6 +19,7 @@ src/navigator/pose_visualize.py
 src/navigator/px4_mavros_run.py
 src/navigator/px4_mavros_run.py
 src/visual_obstacle_map/CMakeLists.txt
+src/visual_obstacle_map/config.yaml
 src/visual_obstacle_map/include/quat_2_dcm.hpp
 src/visual_obstacle_map/src/pcl_helper.cpp
 src/visual_obstacle_map/src/match_pointcloud_and_slam_pose2.cpp

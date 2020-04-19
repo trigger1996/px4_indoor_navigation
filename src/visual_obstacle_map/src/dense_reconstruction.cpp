@@ -236,9 +236,14 @@ void publishPointCloud(Mat& img_left, Mat& dmap, int stereo_pair_id) {
                 for (int i = 0; i < point_num; i++) {
                     geometry_msgs::Point32 pt;
 
-                    pt   = laser_pc1.points[i];
-                    pt.z = mav_pose.pose.position.z;
-                    pt   = xyz_rotation_dcm(pt, m);
+                    // because the laser frame is "map", put it back to "base_footprint" frame
+                    pt.x = laser_pc1.points[i].x - mav_pose.pose.position.x;
+                    pt.y = laser_pc1.points[i].y - mav_pose.pose.position.y;
+                    pt.z = 0;
+
+                    //pt   = laser_pc1.points[i];
+                    //pt.z = mav_pose.pose.position.z;
+                    //pt   = xyz_rotation_dcm(pt, m);
 
                     pc.points.push_back(pt);
                 }
