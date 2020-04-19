@@ -10,6 +10,9 @@
 using namespace std;
 using namespace ygz;
 
+int is_logging_info = true;
+int is_logging_warning = true;
+
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps);
 

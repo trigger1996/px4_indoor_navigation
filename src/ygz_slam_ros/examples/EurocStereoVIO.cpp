@@ -11,6 +11,9 @@
 using namespace std;
 using namespace ygz;
 
+int is_logging_info = true;
+int is_logging_warning = true;
+
 struct GPS_pos
 {
   double x;

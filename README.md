@@ -1,18 +1,16 @@
 #	使用大致流程
 
 	0 
+            git clone https://github.com/trigger1996/px4_indoor_navigator px4_indoor
+            cd px4_indoor
             git submodule update --init --recursive
 
-            将VSLAM移植到package内方便使用roslaunch启动
-                # 首先将GAAS内的ygz_slam_ros复制到src下
-                cp -r (path-to-px4_indoor)/GAAS/software/SLAM/ygz_slam_ros/ (path-to-px4_indoor)/src
-                # 然后将修改后的编译脚本扔进ygz_slam_ros文件夹内
-                cp -rf (path-to-px4_indoor)/ygz_slam_ros_replacements  (path-to-px4_indoor)/src/ygz_slam_ros/
+            #后面实测了一把，编译的时候用不到这两个词表，要用的时候再复制过来就好了
+            #cp ./GAAS/software/SLAM/ygz_slam_ros/voc/brief_k10L6.bin ./src/ygz_slam_ros/voc/
+            #cp ./GAAS/software/SLAM/ygz_slam_ros/Thirdparty/DBow3/orbvoc.dbow3 ./src/ygz_slam_ros/Thirdparty/DBow3/orbvoc.dbow3
 
-                cd (path-to-px4_indoor)/src/ygz_slam_ros/
-                sh generate.sh
-
-                笔者不知道命令写错没，没有实际测试，所以如果有问题建议手动操作 + 欢迎指出
+            cd (path-to-px4_indoor)/src/ygz_slam_ros/
+            sh generate.sh
 
             # 文件结构见下
             cd ~/catkin_ws_ros

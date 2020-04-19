@@ -37,6 +37,9 @@
 using namespace std;
 using namespace ygz;
 
+/// ADDED for ROS
+int is_logging_info = true;
+int is_logging_warning = true;
 
 //NOTE do we want to publish vision estimated quaternion
 bool publishVisionQuaternion = true;
@@ -611,10 +614,6 @@ int main(int argc, char **argv) {
         cout<<"YOU NEED TO SPECIFY CONFIG PATH!"<<endl;
         return -1;
     }
-
-    cout << "[VSLAM_ros] input args: " << argv[1] << endl;
-    cout << "[VSLAM ros] log files:  " << argv[2] << endl;
-
     
     SlamPoseHistory.open("./slampose.csv");
     px4PoseHistory.open("./px4pose.csv");
@@ -690,6 +689,11 @@ int main(int argc, char **argv) {
 
     private_nh.getParam("is_logging_info", is_logging_info);
     private_nh.getParam("is_logging_warning", is_logging_warning);
+
+    cout << "[VSLAM_ros] is_logging_info: "    << is_logging_info    << endl;
+    cout << "[VSLAM_ros] is_logging_warning: " << is_logging_warning << endl;
+    cout << "[VSLAM_ros] input args: " << argv[1] << endl;
+    cout << "[VSLAM_ros] log files:  " << argv[2] << endl;
 
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, left_topic, 10);
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, right_topic, 10);

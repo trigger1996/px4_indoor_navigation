@@ -134,7 +134,7 @@ namespace ygz {
     }
 }
 
-static inline int is_logging_info = false;
-static inline int is_logging_warning = true;
+extern int is_logging_info;
+extern int is_logging_warning;
 
 #endif

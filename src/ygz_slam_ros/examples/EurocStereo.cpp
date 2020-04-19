@@ -11,6 +11,9 @@
 using namespace std;
 using namespace ygz;
 
+int is_logging_info = true;
+int is_logging_warning = true;
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         LOG(INFO) << "Usage: EurocStereo path_to_config" << endl;

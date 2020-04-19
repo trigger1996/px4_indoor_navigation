@@ -52,7 +52,9 @@ using namespace DBoW3;
 using namespace std;
 using namespace ygz;
 
-
+/// ROS Params
+int is_logging_info = true;
+int is_logging_warning = true;
 
 //Scene Pointer
 Scene* pScene = NULL;

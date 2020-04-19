@@ -80,6 +80,16 @@
           <!--remap from="/robot_pose" to="/mavros/vision_pose/pose" /-->
     </node>
 
+    <!-- VSLAM -->
+    <node name="VSLAM_ros"
+          pkg="px4_indoor"
+          type="VSLAM_ros"
+          args="$(find px4_indoor)/src/ygz_slam_ros/examples/simulationCamera.yaml ~/catkin_ws/logs/vslam.log"
+          output="screen">
+	  <param name="is_logging_info" type="int" value="0" />  
+    </node>
+
+
     <!-- TF -->
     <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
 
