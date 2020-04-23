@@ -148,11 +148,20 @@ class Navigator:
                 self.algo = astar.astar_2d.A_star_2D(end_pos)
 
                 self.algo.update_map(self.occupancy_grid_raw)
-                self.algo.find_path(current_pos)
 
+                # for debugging
                 data = self.algo.map_list_to_occupancy_grid()
                 self.occupancy_grid_pub.publish(data)
 
+                path = self.algo.find_path(current_pos)
+                if path != None:
+                    print("2D path found!")
+
+                else:
+                    print("2D path NOT found!")
+                    alternative_nav_pt = astar.astar_2d.find_alternative_cloest_point([end_pos[0], end_pos[1]], self.algo.closed)
+
+                    print("alternative_pt, ", [alternative_nav_pt[0], alternative_nav_pt[1], 1.4])
 
                 time.sleep(0.05) # wait for new nav task.
 

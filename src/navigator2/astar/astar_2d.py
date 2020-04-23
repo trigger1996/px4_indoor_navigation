@@ -112,9 +112,10 @@ class A_star_2D(object):
             self.closed.add(current_obj)
 
             self.extend_round(current_obj, self.map_obstacle_indexed)
-            print("self.openlist: ", self.openlist.__len__())
+            print("current_pt: ", current_obj.get_point())
 
         print('Open List Run Out, No Path Found.')
+        return None
 
     def __distance(self, pt1, pt2):
         return ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** 0.5
@@ -122,8 +123,7 @@ class A_star_2D(object):
     def __aircraft_radius(self, aircraft_points):
         horiontal_radius = 0
         vertical_radius = 0
-
-        #center_point = aircraft_points[0]
+c        #center_point = aircraft_points[0]
         center_point = (0, 0, 0)
 
         print("center point is: ", center_point)
@@ -170,6 +170,7 @@ class A_star_2D(object):
                          y + current_obj.get_point()[1])
 
             node_obj = Node_2D(new_point)
+
             if not new_point in (self.map_obstacle_indexed | self.map_unknown_indexed):
                 continue
 
@@ -283,3 +284,16 @@ class A_star_2D(object):
         # print 'path_points:',path_points
         # print 'obstacle map:',obstacle_map
         return True
+
+def find_alternative_cloest_point(final_pos, closed_list):
+    dst = 10^6
+    target_pt = [final_pos[0], final_pos[1]]
+    for node in closed_list:
+        x = node.point[0]
+        y = node.point[1]
+        # is_valid is confirmed in a*
+        dst_temp = ((x - final_pos[0]) ** 2 + (y - final_pos[1]) ** 2) ** 0.5
+        if dst_temp < dst:
+            target_pt = [x, y]
+            dst = dst_temp
+    return target_pt
