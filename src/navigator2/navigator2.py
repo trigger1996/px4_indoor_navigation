@@ -27,6 +27,7 @@ from path_optimization.path_pruning import PathPruning
 import rospy
 from geometry_msgs.msg import PoseStamped, Twist
 from std_msgs.msg import Float32, String
+from nav_msgs.msg import OccupancyGrid
 from sensor_msgs.msg import Imu, NavSatFix, PointCloud, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 from visualization_msgs.msg import Marker,MarkerArray
@@ -44,6 +45,7 @@ from octomap_msgs.msg import Octomap, OctomapWithPose, octomap_msgs
 import pyquaternion
 
 import astar.astar
+import astar.astar_2d
 import astar.driver
 
 import time
@@ -98,11 +100,12 @@ class Navigator:
 
         self.task_id = -1
         self.obstacle_set_mutex = threading.Lock()  # mutex.acquire(timeout);mutex.release()
+        self.occupancy_grid_mutex = threading.Lock()
         self.nav_command_mutex = threading.Lock()  # for nav command in dstar and ros high level command.
         self.local_pose = None
         t1 = threading.Thread(target=self.ros_thread)
         t1.start()
-        
+
         self.navigator_status_pub = rospy.Publisher('/gi/navigator_status', String, queue_size=10)
         self.path_plan_pub = rospy.Publisher('/gi/navi_path_plan',MarkerArray,queue_size=10)
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
@@ -118,9 +121,6 @@ class Navigator:
     Navigating thread    
     '''
     def keep_navigating(self):
-
-        # for debug:
-        #self.algo = astar.astar.A_star((1,0,0))
 
         ### Added, wait for several seconds for mavros switching to offboard
         for i in range(0, 25):
@@ -145,136 +145,18 @@ class Navigator:
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
                 # print ('Inside inner loop!')
                 current_pos = self.get_current_pose()
-                self.algo = astar.astar.A_star(end_pos)
-                print ('Move 1 step')
+                self.algo = astar.astar_2d.A_star_2D(end_pos)
 
-                obstacle_map = self.driver.get_obstacles_around()  # TODO:加入障碍记忆.
-                print ('From ', current_pos)
-                t1 = time.time()
-                self.driver.algo = astar.astar.A_star(end_pos)
-                self.path = self.algo.find_path(current_pos, self.driver.get_obstacles_around())
-                t2 = time.time()
-                print('A* time cost:', (t2 - t1))
+                self.algo.update_map(self.occupancy_grid_raw)
+                self.algo.find_path(current_pos)
 
-                if not self.path:
-                    # Path no found
-                    self.set_status(status.EXPLORATION)
-                    print ('No path found!')
-                    self.do_hover()  # TODO
-                    time.sleep(0.05)  # TODO
-
-                    # find a new nav_point
-                    #
-                    #continue
-
-                    '''
-                    target_pos = last_pos
-                    if target_pos[2] < 1.0:
-                        target_pos = (last_pos[0], last_pos[1], 1.0)
-                    current_pos = self.get_current_pose()
-                    self.controller.mav_move(
-                        *self.dg.discrete_to_continuous_target((target_pos[0], target_pos[1], target_pos[2])),
-                        abs_mode=True)  # TODO:fix this.
-                    print("Fly to Last position:", target_pos)
-                    while self.distance(target_pos, current_pos) < 0.5:
-                        self.controller.mav_move(
-                            *self.dg.discrete_to_continuous_target((target_pos[0], target_pos[1], target_pos[2])),
-                            abs_mode=True)  # TODO:fix this.
-                        current_pos = self.get_current_pose()
-                        time.sleep(2)
-                    '''
-                else:
-                    # Path found. keep state machine and do task step by step.
-
-                    self.set_status(status.GOING_TO_TARGET)
-                    self.collear_check_path = self.path_prune.remove_collinear_points(self.path)
-                    self.bresenham_check_path = self.path_prune.path_pruning_bresenham3d(self.collear_check_path, obstacle_map)
-
-                    #publish raw path plan.
-                    m_arr = MarkerArray()
-                    marr_index = 0
-                    for next_move in self.path:
-                        point = self.dg.discrete_to_continuous_target((next_move[0],next_move[1],next_move[2]))
-                        mk = Marker()
-                        mk.header.frame_id="map"
-                        mk.action=mk.ADD
-                        mk.id=marr_index
-                        marr_index+=1
-                        mk.color.r = 1.0
-                        mk.color.a = 1.0
-                        mk.type=mk.CUBE
-                        mk.scale.x = 0.6
-                        mk.scale.y = 0.6
-                        mk.scale.z = 0.6
-                        mk.pose.position.x = point[0]
-                        mk.pose.position.y = point[1]
-                        mk.pose.position.z = point[2]
-                        m_arr.markers.append(mk)
-                    self.path_plan_pub.publish(m_arr)
+                data = self.algo.map_list_to_occupancy_grid()
+                self.occupancy_grid_pub.publish(data)
 
 
-                    #move_iter = 0
-                    #move_iter_max = 3
-                    for next_move in self.bresenham_check_path:
-                        self.path_plan_pub.publish(m_arr)
-                        if self.navi_task_terminated():
-                            break
+                time.sleep(0.05) # wait for new nav task.
 
-                        print ('current_pos:', current_pos)
-                        next_pos = next_move
-                        relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
-                                        next_pos[2] - current_pos[2])
-                        print ('next_move : ', next_move)
-                        print ("relative_move : ", relative_pos)
-                        print ("next_pose: ", next_pos)
-                        if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
-                            print ('Path not valid!')
-                            break
-                        self.current_pos = next_pos
-
-                        #axis transform
-                        relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
-
-                        #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
-                        print ('mav_move() input: relative pos=',next_pos)
-                        self.controller.mav_move(*self.dg.discrete_to_continuous_target((next_pos[0],next_pos[1],next_pos[2])), abs_mode=True)  # TODO:fix this.
-
-                        current_pos = self.get_current_pose()
-                        time.sleep(2)
-                        predict_move = (self.current_pos[0] + relative_pos[0], self.current_pos[1] + relative_pos[1],
-                                        self.current_pos[2] + relative_pos[2])
-                        print ("predict_move : ", predict_move)
-
-
-                        if not self.algo.path_is_valid(self.bresenham_check_path, self.driver.get_obstacles_around()):
-                            print ('Path conflict detected!')
-                            break
-
-                        #move_iter += 1
-                        #if move_iter >= move_iter_max:
-                        #    self.do_hover()  # TODO
-                        #    break
-
-            last_pos = current_pose
-            time.sleep(0.05) # wait for new nav task.
-            '''
-            if self.found_path:
-
-                print("Found path!")
-
-                target_position = self.cur_target_position
-
-                result = False
-                while result is False:
-                    result = self.mav_move(target_position[0], target_position[1], target_position[2])
-
-
-                print("Reached Position: ", target_position[0], target_position[1], target_position[2])
-                print("Finished Current Path")
-
-            time.sleep(0.2)
-            '''
-
+            return
 
         print("Mavros not in OFFBOARD mode, Disconnected!")
 
@@ -374,8 +256,6 @@ class Navigator:
         pass'''
 
 
-
-
     '''
     ROS thread
     responsible for subscribers and publishers
@@ -388,6 +268,7 @@ class Navigator:
         self.slam_sub = rospy.Subscriber("/gi/slam_output/pose", PoseStamped, self.slam_pose_callback)
         self.vision_target_sub = rospy.Subscriber("/gi/visual_target/pose", PoseStamped, self.vision_target_callback)
         self.point_cloud_sub = rospy.Subscriber("/camera/left/point_cloud", PointCloud, self.point_cloud_callback)
+        self.occupancy_grid_sub = rospy.Subscriber("/map", OccupancyGrid, self.occupancy_grid_callback)
         self.octomap_cells_vis = rospy.Subscriber("/octomap_point_cloud_centers", PointCloud2, self.octomap_update_callback)
         self.local_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.local_pose_callback)
         self.mavros_sub = rospy.Subscriber("/mavros/state", State, self.mavros_state_callback)
@@ -395,6 +276,7 @@ class Navigator:
 
         # publishers
         #self.mavros_control_pub = rospy.Publisher('mavros/Command', Command, queue_size=10)
+        self.occupancy_grid_pub = rospy.Publisher('/map_test', OccupancyGrid, queue_size=10)
 
         self.set_status(status.INITIALIZED)
 
@@ -418,6 +300,9 @@ class Navigator:
 
     def point_cloud_callback(self, msg):
         self.current_point_cloud = msg
+
+    def occupancy_grid_callback(self, msg):
+        self.occupancy_grid_raw = msg
 
     def octomap_update_callback(self, msg):  # as pointcloud2.
         obs_set = set()
@@ -456,21 +341,21 @@ class Navigator:
         self.STATUS = String(status.name)
 
 
-    '''
+
     def reachTargetPosition(self, target, threshold = 0.1):
 
         delta_x = math.fabs(self.local_pose.pose.position.x - target.pos_sp[0])
         delta_y = math.fabs(self.local_pose.pose.position.y - target.pos_sp[1])
         delta_z = math.fabs(self.local_pose.pose.position.z - target.pos_sp[2])
 
-        distance = (delta_x + delta_y + delta_z)
+        distance = (delta_x ** 2 + delta_y ** 2 + delta_z ** 2)  ** 0.5
 
         print("distance: ", distance, "threshold: ", threshold)
         if distance < threshold:
             return True
         else:
             return False
-'''
+
 
     def setMavMode(self, msg):
         pass
