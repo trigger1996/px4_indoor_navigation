@@ -12,7 +12,7 @@ def gen_aircraft_obj():
     #
     # ret_val.append((0, 0, -4))
 
-    K = 5
+    K = 3                   # in grids, default: 5
     for i in range(-K, K):
         for j in range(-K, K):
             for k in range(-K, K):
@@ -47,14 +47,24 @@ class Node(object):
         self.H = 0
     def get_point(self):
         return self.point
-    def move_cost(self,p):
-        return 1.0 if self.point[2] == p[2] else astar_config.astar_config['z_move_cost']
+   #def move_cost(self,p):
+   #    return 1.0 if self.point[2] == p[2] else astar_config.astar_config['z_move_cost']
+    def move_cost(self, p):
+        if self.point[2] == p[2]:
+            #if self.point[0] != p[0] and self.point[1] != p[1]:
+            #    return 1.414
+            #else:
+            #    return 1.0
+            return ((self.point[0] - p[0]) ** 2 + (self.point[1] - p[1]) ** 2) ** 0.5
+        else:
+            return astar_config.astar_config['z_move_cost']
+
     def __str__(self):
         return "point : %s ,  G: %.1f,  H: %.1f,  F: %.1f" % (str(self.point),self.G,self.H,self.G+self.H) 
 
 
 
-#end_pos          : 结束点(x,y,z)
+#end_pos        : 结束点(x,y,z)
 #open           : 开始列表
 #close          : 关闭列表
 #is_valid       : 判断点是否允许通过  

@@ -187,6 +187,9 @@ class Navigator:
                         m_arr.markers.append(mk)
                     self.path_plan_pub.publish(m_arr)
 
+
+                    move_iter = 0
+                    move_iter_max = 3
                     for next_move in self.bresenham_check_path:
                         self.path_plan_pub.publish(m_arr)
                         if self.navi_task_terminated():
@@ -221,6 +224,12 @@ class Navigator:
                         if not self.algo.path_is_valid(self.bresenham_check_path, self.driver.get_obstacles_around()):
                             print ('Path conflict detected!')
                             break
+
+                        move_iter += 1
+                        if move_iter >= move_iter_max:
+                            self.do_hover()  # TODO
+                            break
+
 
             time.sleep(0.05) # wait for new nav task.
             '''

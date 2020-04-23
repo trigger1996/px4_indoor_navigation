@@ -274,6 +274,21 @@
 			这里的range_finder::link必须和range_finder和link对应
 			不然传感器加不进来
 
+	sublime如何增加快捷键
+		https://jingyan.baidu.com/article/9989c7466f5b91b649ecfe71.html
+		点击sublime text 3的顶层菜单中的“Preferences”，在子菜单中选择“Key Bindings”。
+
+		加入
+			{
+				"button": "button1",
+				"count": 1,
+				"modifiers": ["alt"],
+				"press_command": "drag_select",
+				"command": "goto_definition"
+			}
+		以实现鼠标指向代码可以goto
+
+
 ##	加一个猜测
 	为什么真机飞不起来？
 		今天试了一把，误将pose类型（而非posestamped）类型的数据传入/mavros/vision_pose/pose内

@@ -19,15 +19,28 @@ def square(p, p_end):
 # }
 
 
+# step_size = 1
+# astar_config={
+#    'movement_list': [(step_size, 0, 0),
+#                      (-step_size, 0, 0),
+#                      (0, step_size, 0),
+#                      (0, -step_size, 0),
+#                      (0, 0, step_size),
+#                      (0, 0, -step_size)],
+#
+#     'func_h': square,
+#     'z_move_cost': 5
+# }
+
 step_size = 1
 astar_config={
-    'movement_list': [(step_size, 0, 0),
-                      (-step_size, 0, 0),
-                      (0, step_size, 0),
-                      (0, -step_size, 0),
-                      (0, 0, step_size),
-                      (0, 0, -step_size)],
+    'movement_list': [(step_size,   0,          0),
+                      (-step_size,  0,          0),
+                      (0,           step_size,  0),
+                      (0,          -step_size,  0),
+                      (0,           0,          step_size),
+                      (0,           0,         -step_size)],
 
     'func_h': square,
-    'z_move_cost': 5
+    'z_move_cost': 35
 }
