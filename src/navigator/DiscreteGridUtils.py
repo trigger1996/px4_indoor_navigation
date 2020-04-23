@@ -7,7 +7,7 @@ class DiscreteGridUtils:
         #print (((pos[0] - (self.grid_size * 0.5)) / self.grid_size),
         # ((pos[1] - (self.grid_size * 0.5)) / self.grid_size),
         # ((pos[2] - (self.grid_size * 0.5)) / self.grid_size))
-        return (  int((pos[0] + (self.grid_size*0.5))/self.grid_size)-1,
+        return (  int((pos[0] + (self.grid_size * 0.5)) / self.grid_size)-1,
                   int((pos[1] + (self.grid_size * 0.5)) / self.grid_size)-1,
                   int((pos[2] + (self.grid_size * 0.5)) / self.grid_size)-1)
     def discrete_to_continuous_target(self,grid_pos):  # x,y,z the center of input grid

@@ -38,6 +38,10 @@ astar_config={
                       (-step_size,  0,          0),
                       (0,           step_size,  0),
                       (0,          -step_size,  0),
+#                     (step_size,   step_size,  0),
+#                     (step_size,  -step_size,  0),
+#                     (-step_size,  step_size,  0),
+#                     (-step_size, -step_size,  0),
                       (0,           0,          step_size),
                       (0,           0,         -step_size)],
 
