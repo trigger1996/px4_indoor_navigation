@@ -153,9 +153,32 @@ class Navigator:
                 data = self.algo.map_list_to_occupancy_grid()
                 self.occupancy_grid_pub.publish(data)
 
-                path = self.algo.find_path(current_pos)
+                path = self.algo.find_path(current_pos, self.cur_target_position)
                 if path != None:
                     print("2D path found!")
+
+                    dg = DiscreteGridUtils(grid_size = self.occupancy_grid_raw)
+                    #publish raw path plan.
+                    m_arr = MarkerArray()
+                    marr_index = 0
+                    for next_move in path:
+                        point = dg.discrete_to_continuous_target((next_move[0],next_move[1], 5))
+                        mk = Marker()
+                        mk.header.frame_id="map"
+                        mk.action=mk.ADD
+                        mk.id=marr_index
+                        marr_index+=1
+                        mk.color.r = 1.0
+                        mk.color.a = 1.0
+                        mk.type=mk.CUBE
+                        mk.scale.x = 0.6
+                        mk.scale.y = 0.6
+                        mk.scale.z = 0.6
+                        mk.pose.position.x = point[0]
+                        mk.pose.position.y = point[1]
+                        mk.pose.position.z = point[2]
+                        m_arr.markers.append(mk)
+                    self.path_plan_pub.publish(m_arr)
 
                 else:
                     print("2D path NOT found!")

@@ -1,62 +1,18 @@
 #encoding=utf-8
 import astar_config
+import numpy as np
 import heapq
 
+from heapq import heappush, heappop
 from nav_msgs.msg import OccupancyGrid
 import rospy
 
-#from simulator.visualization.config.aircraft_config import aircraft_obj
 
-def gen_aircraft_obj():
-    ret_val = []
-    K = 3
-    for i in range(-K, K):
-        for j in range(-K, K):
-            for k in range(-K, K):
-                ret_val.append((i, j, k))
-
-    ret_val.append((0, 0, -3))
-
-
-    return ret_val
-
-
-aircraft_obj = {
-    "aircraft_points": gen_aircraft_obj(),
-    "init_center": (0, 0, 0)
-}
-
-
-# 节点类
-class Node_2D(object):
-    def __init__(self, point):
-        self.point = point
-        self.parent = None
-        self.G = 0
-        self.H = 0
-
-    def get_point(self):
-        return self.point
-
-    def move_cost(self, p):
-        if self.point[0] != p[0] and self.point[1] != p[1]:
-            return 1.414
-        else:
-            return 1.0
-
-    def __str__(self):
-        return "point : %s ,  G: %.1f,  H: %.1f,  F: %.1f" % (str(self.point), self.G, self.H, self.G + self.H)
-
-# end_pos        : 结束点(x,y,z)
-# openlist       : 开列表
-# closed         : 关列表
-# is_valid       : 判断点是否允许通过
-# movement_list  : 允许转向的方向
-# func_h         : 计算H值的算法
 class A_star_2D(object):
     def __init__(self, end_pos):
         self.end_pos = end_pos
 
+        self.map_array = []
         self.map_width = 0
         self.map_height = 0
         self.map_obstacle_indexed = None
@@ -68,130 +24,83 @@ class A_star_2D(object):
         self.closed = []
         self.movement_list = astar_config.astar_config['movement_list_2d']
         self.func_h = astar_config.astar_config['func_h_2d']
-        self.horiontal_radius, self.vertical_radius = self.__aircraft_radius(aircraft_obj['aircraft_points'])
+        #self.horiontal_radius, self.vertical_radius = self.__aircraft_radius(aircraft_obj['aircraft_points'])
         # print ('aircraft_obj',aircraft_obj)
 
-    # usage: self.algo.update_map(self.occupancy_grid_raw)
-    #        self.algo.find_path(self.get_current_pose())
-    def find_path(self, start_pos):
-        self.openlist = []
-        self.closed = set()
-        start_obj = Node_2D(start_pos)
-        #self.openlist.append(start_obj)
 
-        heapq.heappush(self.openlist, ((start_obj.G+start_obj.H), start_obj))
-        center_point_can_go = self.is_valid(self.end_pos, self.map_obstacle_indexed)   #判断中心点能否到达，如果中心点不能到达，则判断机身能否到达
-        path = []
-        count = 0
-
-        if self.end_pos in self.map_obstacle_indexed:
-            print('Target Position Found inside Obstacle, Finding Path Failed!')
-            return None
-
-        while self.openlist:
-            #print ('obstacle_pos_list', self.map_obstacle_indexed)
-            self.debug_get_openlist_info()
-            count += 1
-
-            current_obj = heapq.heappop(self.openlist)[1]
-
-            if self.__success(current_obj, center_point_can_go):   #判断是否到达
-
-                while current_obj.parent:
-                    path.append(current_obj.get_point())
-                    current_obj = current_obj.parent
-
-                path.append(current_obj.get_point())
-
-                print('count:', count)
-                print("extend:", len(self.openlist)+len(self.closed))
-
-                return path[::-1]
+    def heuristic_cost_estimate(self, neighbor, goal):
+        x = neighbor[0] - goal[0]
+        y = neighbor[1] - goal[1]
+        return abs(x) + abs(y)
 
 
-            self.closed.add(current_obj)
+    def dist_between(self, a, b):
+        return (b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
 
-            self.extend_round(current_obj, self.map_obstacle_indexed)
-            print("current_pt: ", current_obj.get_point())
 
-        print('Open List Run Out, No Path Found.')
+    def reconstruct_path(self, came_from, current):
+        path = [current]
+        while current in came_from:
+            current = came_from[current]
+            path.append(current)
+        return path
+
+
+    # astar function returns a list of points (shortest path)
+    def find_path(self, start, goal):
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]  # 8个方向
+
+        close_set = set()
+        came_from = {}
+        gscore = {start: 0}
+        fscore = {start: self.heuristic_cost_estimate(start, goal)}
+
+        openSet = []
+        heappush(openSet, (fscore[start], start))  # 往堆中插入一条新的值
+
+        # while openSet is not empty
+        while openSet:
+            # current := the node in openSet having the lowest fScore value
+            current = heappop(openSet)[1]  # 从堆中弹出fscore最小的节点
+
+            if current == goal:
+                return self.reconstruct_path(came_from, current)
+
+            close_set.add(current)
+
+            for i, j in directions:  # 对当前节点的 8 个相邻节点一一进行检查
+                neighbor = current[0] + i, current[1] + j
+
+                ## 判断节点是否在地图范围内，并判断是否为障碍物
+                if 0 <= neighbor[1] < self.map_height:
+                    if 0 <= neighbor[0] < self.map_width:
+                        if self.map_array[neighbor[1]][neighbor[0]] == 100:  # 100为障碍物
+                            continue
+                    else:
+                        # array bound y walls
+                        continue
+                else:
+                    # array bound x walls
+                    continue
+
+                # Ignore the neighbor which is already evaluated.
+                if neighbor in close_set:
+                    continue
+
+                #  The distance from start to a neighbor via current
+                tentative_gScore = gscore[current] + self.dist_between(current, neighbor)
+
+                if neighbor not in [i[1] for i in openSet]:  # Discover a new node
+                    heappush(openSet, (fscore.get(neighbor, np.inf), neighbor))
+                elif tentative_gScore >= gscore.get(neighbor, np.inf):  # This is not a better path.
+                    continue
+
+                    # This path is the best until now. Record it!
+                came_from[neighbor] = current
+                gscore[neighbor] = tentative_gScore
+                fscore[neighbor] = tentative_gScore + self.heuristic_cost_estimate(neighbor, goal)
+
         return None
-
-    def __distance(self, pt1, pt2):
-        return ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** 0.5
-
-    def __aircraft_radius(self, aircraft_points):
-        horiontal_radius = 0
-        vertical_radius = 0
-c        #center_point = aircraft_points[0]
-        center_point = (0, 0, 0)
-
-        print("center point is: ", center_point)
-
-        for point in aircraft_points:
-            if point[2] == 0:
-                r = self.__distance(point,center_point)
-                if horiontal_radius < r:
-                    horiontal_radius = r
-            if point[2] < 0:
-                r = self.__distance(point,center_point)
-                if vertical_radius < r:
-                    vertical_radius = r
-
-        print("horizontal radius and vertical: ", horiontal_radius, vertical_radius)
-        return horiontal_radius, vertical_radius
-
-    def __success(self, current_obj, center_point_can_go):
-        # if reached target point, return True
-        if center_point_can_go:
-            if current_obj.get_point() == self.end_pos:
-                return True
-        # if distance small than body radius, return True
-        elif not center_point_can_go:
-            if self.__distance(current_obj.get_point(), self.end_pos) <= self.horiontal_radius:
-                return True
-
-        return False
-
-
-    def debug_get_openlist_info(self):
-        first_element = heapq.heappop(self.openlist)
-        node = first_element[1]
-        #print ('First element of openlist:',node.get_point())
-        heapq.heappush(self.openlist, ((node.G+node.H), node))
-
-    # 遍历周围节点，检测碰撞，寻找路径
-    def extend_round(self, current_obj, obstacle_pos_list):
-
-        # 8 direction
-        for x, y in self.movement_list:
-
-            new_point = (x + current_obj.get_point()[0],
-                         y + current_obj.get_point()[1])
-
-            node_obj = Node_2D(new_point)
-
-            if not new_point in (self.map_obstacle_indexed | self.map_unknown_indexed):
-                continue
-
-            if not self.is_valid(new_point, obstacle_pos_list):
-                continue
-
-            if self.is_in_closedlist(new_point):
-                continue
-
-            if self.is_in_openlist(new_point):
-                new_g = current_obj.G + current_obj.move_cost(new_point)
-                if node_obj.G > new_g:
-                    node_obj.G = new_g
-                    node_obj.parent = current_obj
-            else:
-                node_obj = Node_2D(new_point)
-                node_obj.G = current_obj.G + current_obj.move_cost(new_point)
-                node_obj.H = self.func_h(node_obj.get_point(), self.end_pos)
-                node_obj.parent = current_obj
-                # self.openlist.append(node_obj)
-                heapq.heappush(self.openlist, ((node_obj.G + node_obj.H), node_obj))
 
     def update_map(self, occupancy_grid_raw):
         width  = occupancy_grid_raw.info.width
@@ -201,14 +110,19 @@ c        #center_point = aircraft_points[0]
         occupied_list = []
         unknown_list  = []
         for y in range(0, height):
+            row = []
             for x in range(0, width):
                 data = occupancy_grid_raw.data[y * width + x]
                 if data == -1:
                     unknown_list.append((x, y))
+                    row.append(-1)
                 elif data > 45:
                     occupied_list.append((x, y))
+                    row.append(100)
                 else:
                     free_list.append((x, y))
+                    row.append(0)
+            self.map_array.append(row)
 
         self.map_obstacle_indexed = set(occupied_list)
         self.map_unknown_indexed  = set(unknown_list)
@@ -238,62 +152,4 @@ c        #center_point = aircraft_points[0]
             data.data[y * self.map_width + x] = 0
         data.header.stamp = rospy.Time.now()
 
-
         return data
-
-    def is_in_closedlist(self, p):
-        for node in self.closed:
-            if node.point[0] == p[0] and node.point[1] == p[1]:
-                return True
-        return False
-
-    def is_in_openlist(self, p):
-        for heap_obj in self.openlist:
-            node = heap_obj[1]
-            if node.point[0] == p[0] and node.point[1] == p[1]:
-                return True
-        return False
-
-    def is_valid(self, pt, obstacle_map):
-        global aircraft_obj
-        obstacle_map_indexed = set(obstacle_map)
-        aircraft_points = []
-
-        for item in aircraft_obj['aircraft_points']:
-            aircraft_points.append(
-                (item[0] + pt[0],
-                 item[1] + pt[1])
-            )
-
-        aircraft_indexed = set(aircraft_points)
-        # import pdb;pdb.set_trace()
-        if obstacle_map_indexed & aircraft_indexed:
-            return False
-        else:
-            return True
-
-    def path_is_valid(self, path_points, obstacle_map):
-        #    return False
-        for pt in path_points:
-            if not self.is_valid(pt, obstacle_map):
-                print('Path is invalid.')
-                return False
-
-        print('Path is valid.')
-
-        # print 'path_points:',path_points
-        # print 'obstacle map:',obstacle_map
-        return True
-
-def find_alternative_cloest_point(final_pos, closed_list):
-    dst = 10^6
-    target_pt = [final_pos[0], final_pos[1]]
-    for node in closed_list:
-        x = node.point[0]
-        y = node.point[1]
-        # is_valid is confirmed in a*
-        dst_temp = ((x - final_pos[0]) ** 2 + (y - final_pos[1]) ** 2) ** 0.5
-        if dst_temp < dst:
-            target_pt = [x, y]
-            dst = dst_temp
-    return target_pt
