@@ -274,19 +274,32 @@
 			这里的range_finder::link必须和range_finder和link对应
 			不然传感器加不进来
 
-	sublime如何增加快捷键
-		https://jingyan.baidu.com/article/9989c7466f5b91b649ecfe71.html
-		点击sublime text 3的顶层菜单中的“Preferences”，在子菜单中选择“Key Bindings”。
+	Pycharm的安装和快捷方式
+		https://ywnz.com/linuxjc/3160.html
+		安装比较简单，主要是快捷方式
+			1.终端进入此路径：cd /usr/share/applications
+			2.执行命令：sudo touch pycharm.desktop
+			3.执行命令：sudo vim pycharm.desktop
+			4.复制下面代码到pycharm.desktop文件中，注意修改其中标记的两项的路径
+				[Desktop Entry]
 
-		加入
-			{
-				"button": "button1",
-				"count": 1,
-				"modifiers": ["alt"],
-				"press_command": "drag_select",
-				"command": "goto_definition"
-			}
-		以实现鼠标指向代码可以goto
+				Version=1.0
+
+				Type=Application
+
+				Name=PyCharm
+
+				Icon=/opt/pycharm-2018.2.4/bin/pycharm.png    #注意此处的路径
+
+				Exec="/opt/pycharm-2018.2.4/bin/pycharm.sh" %f   #注意此处的路径
+
+				Comment=The Drive to Develop
+
+				Categories=Development;IDE;
+
+				Terminal=false Startup
+
+				WMClass=jetbrains-pycharm
 
 
 ##	加一个猜测
