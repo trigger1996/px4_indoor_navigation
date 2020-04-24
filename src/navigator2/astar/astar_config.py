@@ -38,7 +38,7 @@ def square_2d(p, p_end):
 #     'z_move_cost': 5
 # }
 
-step_size = 1
+step_size = 1       # in grids
 astar_config={
     'movement_list': [(step_size,   0,          0),
                       (-step_size,  0,          0),
@@ -54,11 +54,11 @@ astar_config={
     'movement_list_2d': [(step_size,      0),
                          (-step_size,     0),
                          (0,              step_size),
-                         (0,             -step_size)],
-#                         (step_size,      step_size),
-#                         (step_size,     -step_size),
-#                         (-step_size,     step_size),
-#                         (-step_size,    -step_size)],
+                         (0,             -step_size),
+                         (step_size,      step_size),
+                         (step_size,     -step_size),
+                         (-step_size,     step_size),
+                         (-step_size,    -step_size)],
 
     'func_h':    square,
     'func_h_2d': square_2d,

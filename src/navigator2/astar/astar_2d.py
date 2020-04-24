@@ -9,18 +9,18 @@ from nav_msgs.msg import OccupancyGrid
 import rospy
 
 class A_star_2D(object):
-    def __init__(self, end_pos, vehicle_width = 0.8, vehicle_length = 0.8):
+    def __init__(self, end_pos, vehicle_width = 0.8, vehicle_length = 0.8, resolution = 0.05):
         self.end_pos = end_pos
 
         # basic map info
         self.map_array = []
-        self.map_width = 0
-        self.map_height = 0
+        self.map_width = 0                  # in grids
+        self.map_height = 0                 # in grids
         self.map_obstacle_indexed = None
         self.map_unknown_indexed  = None
         self.map_free_indexed     = None
-        self.resolution = 0.2
-        self.map_origin = []        # where grid map point (0, 0, 0) in real world
+        self.resolution = resolution        # in meters
+        self.map_origin = []                # where grid map point (0, 0, 0) in real world
 
         # map scale parameters
         self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=0.2)
@@ -32,19 +32,19 @@ class A_star_2D(object):
         self.close_set = None
         self.movement_list = astar_config.astar_config['movement_list_2d']
         self.func_h = astar_config.astar_config['func_h_2d']
-        #self.horiontal_radius, self.vertical_radius = self.__aircraft_radius(aircraft_obj['aircraft_points'])
-        # print ('aircraft_obj',aircraft_obj)
 
         # vehicle_info
-        self.vehicle_width  = vehicle_width
+        self.vehicle_width  = vehicle_width         # in meters
         self.vehicle_length = vehicle_length
         self.vehicle_R_grid = int((max(self.vehicle_width, self.vehicle_length) / 2
                                    + (self.resolution * 0.5)) / self.resolution) - 1
+        print ('vehicle Radius/Grids: ', self.vehicle_R_grid)
 
     def heuristic_cost_estimate(self, neighbor, goal):
-        x = neighbor[0] - goal[0]
-        y = neighbor[1] - goal[1]
-        return abs(x) + abs(y)
+        #x = neighbor[0] - goal[0]
+        #y = neighbor[1] - goal[1]
+        #return abs(x) + abs(y)
+        return self.func_h(neighbor, goal)
 
 
     def dist_between(self, a, b):
@@ -62,7 +62,8 @@ class A_star_2D(object):
     # astar function returns a list of points (shortest path)
     # start, goal in meters
     def find_path(self, start, goal):
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0) , (1, 1), (1, -1), (-1, 1), (-1, -1)]  # 8个方向
+        #directions = [(0, 1), (0, -1), (1, 0), (-1, 0) , (1, 1), (1, -1), (-1, 1), (-1, -1)]  # 8个方向
+        directions = self.movement_list
 
         start = self.dg.continuous_to_discrete((start[0], start[1], start[2]))  # meters to grids
         goal  = self.dg.continuous_to_discrete((goal[0],  goal[1],  goal[2]))
