@@ -145,19 +145,22 @@ class Navigator:
 
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
                 # print ('Inside inner loop!')
-                self.dg = DiscreteGridUtils.DiscreteGridUtils(grid_size=self.occupancy_grid_raw.info.resolution)
+                self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
+                self.dg.update_offset([self.occupancy_grid_raw.info.origin.position.x,
+                                       self.occupancy_grid_raw.info.origin.position.y,
+                                       self.occupancy_grid_raw.info.origin.position.z])
 
                 #self.cur_target_position_raw = (self.local_pose_raw[0], self.local_pose_raw[1], self.local_pose_raw[2])
                 # 几个比较坑的问题
                 # 1 地图提供的origin是地图(0, 0, 0)点对应实际坐标系的位置
                 # 2 2D地图和3D地图的分辨率是不同的
                 current_pos = self.get_current_pose()       # in grids
-                current_pos_in_2Dmap = self.dg.continuous_to_discrete((self.local_pose_raw[0] - self.occupancy_grid_raw.info.origin.position.x,
-                                                                       self.local_pose_raw[1] - self.occupancy_grid_raw.info.origin.position.y,
-                                                                       1.4 - self.occupancy_grid_raw.info.origin.position.z))                   # in_grids
-                end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0] - self.occupancy_grid_raw.info.origin.position.x,
-                                                          self.cur_target_position_raw[1] - self.occupancy_grid_raw.info.origin.position.y,
-                                                          self.cur_target_position_raw[2] - self.occupancy_grid_raw.info.origin.position.z))   # in_grids
+                current_pos_in_2Dmap = self.dg.continuous_to_discrete((self.local_pose_raw[0],
+                                                                       self.local_pose_raw[1],
+                                                                       1.4))                   # in_grids
+                end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0],
+                                                          self.cur_target_position_raw[1],
+                                                          self.cur_target_position_raw[2]))   # in_grids
 
                 self.algo = astar.astar_2d.A_star_2D(end_pos)       # end pos in grids
 
@@ -167,18 +170,14 @@ class Navigator:
                 data = self.algo.map_list_to_occupancy_grid()
                 self.occupancy_grid_pub.publish(data)
 
-                path = self.algo.find_path(current_pos_in_2Dmap, end_pos)
+                path = self.algo.find_path(self.local_pose_raw, self.cur_target_position_raw)
                 if path != None:
                     print("2D path found!")
 
                     #publish raw path plan.
                     m_arr = MarkerArray()
                     marr_index = 0
-                    for next_move in path:
-                        point = self.dg.discrete_to_continuous_target((next_move[0],  next_move[1], 5))
-                        point = (point[0] + self.occupancy_grid_raw.info.origin.position.x,
-                                 point[1] + self.occupancy_grid_raw.info.origin.position.y,
-                                 point[2] + self.occupancy_grid_raw.info.origin.position.z)
+                    for point in path:
                         mk = Marker()
                         mk.header.frame_id="map"
                         mk.action=mk.ADD
@@ -200,14 +199,10 @@ class Navigator:
                     print("2D path NOT found!")
                     alternative_path = self.algo.find_alternative_path([end_pos[0], end_pos[1]])
 
+                    print("Alternative path found: ", alternative_path)
                     m_arr = MarkerArray()
                     marr_index = 0
-                    for next_move in alternative_path:
-                        point = self.dg.discrete_to_continuous_target((next_move[0], next_move[1], 5))
-                        point = (point[0] + self.occupancy_grid_raw.info.origin.position.x,
-                                 point[1] + self.occupancy_grid_raw.info.origin.position.y,
-                                 point[2] + self.occupancy_grid_raw.info.origin.position.z)
-
+                    for point in alternative_path:
                         mk = Marker()
                         mk.header.frame_id="map"
                         mk.action=mk.ADD
