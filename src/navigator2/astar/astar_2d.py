@@ -209,6 +209,7 @@ class A_star_2D(object):
 
     def find_alternative_closest_point(self, final_pos):
         dst = 10 ** 6
+        target_pt = [final_pos[0], final_pos[1]]
 
         for node in self.close_set:
             x = node[0]

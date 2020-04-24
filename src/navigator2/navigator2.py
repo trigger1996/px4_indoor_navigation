@@ -231,10 +231,74 @@ class Navigator:
                     # 因为在闭列表内，所以不可能找不到备用路径的
                     print("Alternative path found: ", alternative_path)
 
+                    #move_iter = 0
+                    #move_iter_max = 3
+                    for next_move in alternative_path:
+                        if self.navi_task_terminated():
+                            break
+
+                        print ('current_pos:', current_pos)
+                        next_pos = next_move
+                        relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
+                                        next_pos[2] - current_pos[2])
+                        print ('next_move : ', next_move)
+                        print ("relative_move : ", relative_pos)
+                        print ("next_pose: ", next_pos)
+
+                        # TODO
+                        #if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
+                        #    print ('Path not valid!')
+                        #    break
+
+                        self.current_pos = next_pos
+
+                        #axis transform
+                        relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
+
+                        #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
+                        print ('mav_move() input: relative pos=',next_pos)
+
+                        self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
+                        while self.distance(self.local_pose_raw, next_pos) >= 0.66:
+                            self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
+                            time.sleep(2)
+
+                        current_pos = self.get_current_pose()
+                        predict_move = (self.current_pos[0] + relative_pos[0], self.current_pos[1] + relative_pos[1],
+                                        self.current_pos[2] + relative_pos[2])
+                        print ("predict_move : ", predict_move)
+
+                    continue
 
 
+                for next_move in path:
+                    if self.navi_task_terminated():
+                        break
 
+                    print ('current_pos:', current_pos)
+                    next_pos = next_move
+                    relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
+                                    next_pos[2] - current_pos[2])
+                    print ('next_move : ', next_move)
+                    print ("relative_move : ", relative_pos)
+                    print ("next_pose: ", next_pos)
+                    #if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
+                    #    print ('Path not valid!')
+                    #    break
+                    self.current_pos = next_pos
 
+                    #axis transform
+                    relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
+
+                    #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
+                    print ('mav_move() input: relative pos=',next_pos)
+                    self.controller.mav_move((next_pos[0],next_pos[1],next_pos[2]), abs_mode=True)  # TODO:fix this.
+
+                    current_pos = self.get_current_pose()
+                    time.sleep(2)
+                    predict_move = (self.current_pos[0] + relative_pos[0], self.current_pos[1] + relative_pos[1],
+                                    self.current_pos[2] + relative_pos[2])
+                    print ("predict_move : ", predict_move)
                 time.sleep(0.05) # wait for new nav task.
 
             return
