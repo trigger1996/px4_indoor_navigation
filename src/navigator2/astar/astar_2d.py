@@ -8,10 +8,11 @@ from heapq import heappush, heappop
 from nav_msgs.msg import OccupancyGrid
 import rospy
 
-DEFAULT_UAV_ALT = 1.5
+DEFAULT_UAV_ALT = 1.8
+explored_alternative_pt = []    # x, y
 
 class A_star_2D(object):
-    def __init__(self, end_pos, vehicle_width = 0.8, vehicle_length = 0.8, resolution = 0.2):
+    def __init__(self, end_pos, vehicle_width = 1.4, vehicle_length = 1.4, resolution = 0.05):
         self.end_pos = end_pos
 
         # basic map info
@@ -25,7 +26,7 @@ class A_star_2D(object):
         self.map_origin = []                # where grid map point (0, 0, 0) in real world
 
         # map scale parameters
-        self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=0.2)
+        self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=0.05)
 
         # A* algorithm parameters
         self.came_from = {}
@@ -40,7 +41,8 @@ class A_star_2D(object):
         self.vehicle_length = vehicle_length
         self.vehicle_R_grid = int((max(self.vehicle_width, self.vehicle_length) / 2
                                    + (self.resolution * 0.5)) / self.resolution) - 1
-        print ('vehicle Radius/Grids: ', self.vehicle_R_grid)
+        print('--------A* 2D Started---------')
+        print('vehicle Radius/Grids: ', self.vehicle_R_grid)
 
     def heuristic_cost_estimate(self, neighbor, goal):
         #x = neighbor[0] - goal[0]
@@ -132,7 +134,11 @@ class A_star_2D(object):
 
         return None
 
-    def is_valid(self, _x, _y):
+    def is_valid(self, _x, _y, is_input_in_meter = False):
+        # 加入这个可以供函数外调用，用于动态避障
+        if is_input_in_meter:
+            (_x, _y, _z) = self.dg.continuous_to_discrete((_x, _y, 5))
+
         for y in range(_y - self.vehicle_R_grid, _y + self.vehicle_R_grid):
             for x in range(_x - self.vehicle_R_grid, _x + self.vehicle_R_grid):
                 if 0 <= x < self.map_width and 0 <= y < self.map_height:
@@ -207,7 +213,7 @@ class A_star_2D(object):
 
         return data
 
-    def find_alternative_closest_point(self, final_pos):
+    def find_alternative_closest_point(self, final_pos, is_reject_explored_pt = True):
         dst = 10 ** 6
         target_pt = [final_pos[0], final_pos[1]]
 
@@ -216,9 +222,23 @@ class A_star_2D(object):
             y = node[1]
             # is_valid is confirmed in a*
             dst_temp = ((x - final_pos[0]) ** 2 + (y - final_pos[1]) ** 2) ** 0.5
+            # 1 找到和终点直线距离最小的点作为替代目标点
+            # 2 这个点必须不能撞
             if dst_temp < dst and self.is_valid(x, y):
+                # 3 加入: 为了方便多次导航 加入一个探索过的点的集合，如果这个点在这个点集合的范围内，则不采用
+                if is_reject_explored_pt:
+                    is_this_point_navigated = False
+                    for i in range(0, explored_alternative_pt.__len__()):
+                        pt_in_grid = explored_alternative_pt[i]
+                        if self.dist_between(pt_in_grid, (x, y)) <= 2.5 / self.resolution:       # default 1.0
+                            is_this_point_navigated = True
+                            break
+                    if is_this_point_navigated:
+                        continue
+
                 target_pt = [x, y]
                 dst = dst_temp
+        explored_alternative_pt.append(target_pt)
         return target_pt
 
     def find_alternative_path(self, final_pos):

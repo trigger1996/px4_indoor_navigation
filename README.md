@@ -233,6 +233,11 @@
 		实体机：
 			多一个rplidar_ros
 
+                参数调整：
+                    https://google-cartographer-ros.readthedocs.io/en/latest/algo_walkthrough.html?highlight=resolution
+                    https://google-cartographer-ros.readthedocs.io/en/latest/tuning.html?highlight=resolution
+
+
         如何用rosrun或者roslaunch启动python代码
             https://answers.ros.org/question/56640/calling-a-python-script-with-rosrun/
 

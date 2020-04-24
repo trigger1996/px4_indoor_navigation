@@ -131,6 +131,9 @@ class Navigator:
                 break
             time.sleep(1)
 
+        print("wait for initial mapping...")
+        time.sleep(30)
+
         while self.mavros_state == "OFFBOARD" and not(rospy.is_shutdown()):
 
             # print ('Inside outer loop!')
@@ -163,7 +166,8 @@ class Navigator:
                                                           self.cur_target_position_raw[1],
                                                           self.cur_target_position_raw[2]))   # in_grids
 
-                self.algo = astar.astar_2d.A_star_2D(self.cur_target_position_raw)
+                self.algo = astar.astar_2d.A_star_2D(self.cur_target_position_raw,
+                                                     resolution=self.occupancy_grid_raw.info.resolution)
 
                 self.algo.update_map(self.occupancy_grid_raw)
 
@@ -237,36 +241,35 @@ class Navigator:
                         if self.navi_task_terminated():
                             break
 
+                        current_pos = self.get_current_pose()  # in grids
                         print ('current_pos:', current_pos)
                         next_pos = next_move
                         relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
                                         next_pos[2] - current_pos[2])
-                        print ('next_move : ', next_move)
-                        print ("relative_move : ", relative_pos)
-                        print ("next_pose: ", next_pos)
+                        #print ('next_move : ', next_move)
+                        #print ("relative_move : ", relative_pos)
+                        #print ("next_pose: ", next_pos)
 
-                        # TODO
-                        #if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
-                        #    print ('Path not valid!')
-                        #    break
+
+
 
                         self.current_pos = next_pos
 
-                        #axis transform
+                        #axis transform                        # TODO
+                        #if not self.algo.is_valid(next_pos[0], next_pos[1], True):
+                        #    print ('Path not valid!')
+                        #    break
                         relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
 
                         #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
                         print ('mav_move() input: relative pos=',next_pos)
 
                         self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
-                        while self.distance(self.local_pose_raw, next_pos) >= 0.66:
-                            self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
-                            time.sleep(2)
+                        #while self.distance(self.local_pose_raw, next_pos) >= 0.66:
+                        #    self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
+                        #    time.sleep(2)
 
-                        current_pos = self.get_current_pose()
-                        predict_move = (self.current_pos[0] + relative_pos[0], self.current_pos[1] + relative_pos[1],
-                                        self.current_pos[2] + relative_pos[2])
-                        print ("predict_move : ", predict_move)
+                        time.sleep(1)
 
                     continue
 
@@ -275,16 +278,20 @@ class Navigator:
                     if self.navi_task_terminated():
                         break
 
+                    current_pos = self.get_current_pose()  # in grids
                     print ('current_pos:', current_pos)
                     next_pos = next_move
                     relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
                                     next_pos[2] - current_pos[2])
-                    print ('next_move : ', next_move)
-                    print ("relative_move : ", relative_pos)
-                    print ("next_pose: ", next_pos)
-                    #if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
+                    #print ('next_move : ', next_move)
+                    #print ("relative_move : ", relative_pos)
+                    #print ("next_pose: ", next_pos)
+
+                    # TODO
+                    # if not self.algo.is_valid(next_pos[0], next_pos[1], True):
                     #    print ('Path not valid!')
                     #    break
+
                     self.current_pos = next_pos
 
                     #axis transform
@@ -292,13 +299,14 @@ class Navigator:
 
                     #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
                     print ('mav_move() input: relative pos=',next_pos)
-                    self.controller.mav_move((next_pos[0],next_pos[1],next_pos[2]), abs_mode=True)  # TODO:fix this.
+                    self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
+                    #while self.distance(self.local_pose_raw, next_pos) >= 0.66:
+                    #    self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
+                    #    time.sleep(2)
 
+                    time.sleep(1)
                     current_pos = self.get_current_pose()
-                    time.sleep(2)
-                    predict_move = (self.current_pos[0] + relative_pos[0], self.current_pos[1] + relative_pos[1],
-                                    self.current_pos[2] + relative_pos[2])
-                    print ("predict_move : ", predict_move)
+
                 time.sleep(0.05) # wait for new nav task.
 
             return
@@ -511,9 +519,10 @@ class Navigator:
 if __name__ == '__main__':
     nav = Navigator()
 
-    target_x = rospy.get_param('~target_x', 10)
-    target_y = rospy.get_param('~target_y', 0)
-    target_z = rospy.get_param('~target_z', 2.5)
+    # in FLU meters
+    target_x = rospy.get_param('~target_x', 30)     # 10, 0, 2.5, modified here for debugging
+    target_y = rospy.get_param('~target_y', 6)
+    target_z = rospy.get_param('~target_z', 1.5)
 
     print("[Px4 indoor] target position: ", [target_x, target_y, target_z])
 
