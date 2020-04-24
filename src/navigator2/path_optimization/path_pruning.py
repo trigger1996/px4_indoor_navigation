@@ -1,12 +1,13 @@
 import numpy as np
 
 from bresenham3d import Bresenham3D
+import DiscreteGridUtils
 
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-class PathPruning:
+class PathPruning(object):
 
     def __init__(self, obstacle_distance=10):
 
@@ -98,7 +99,60 @@ class PathPruning:
 
         return np.sqrt(x_distance + y_distance + z_distance)
 
+class PathPruning_wScale(PathPruning):
 
+    def __init__(self, obstacle_distance=10, resolution = 0.2):
+        super(PathPruning_wScale, self).__init__(obstacle_distance)
+
+        self.resolution = resolution
+        self.dg = DiscreteGridUtils.DiscreteGridUtils(grid_size=self.resolution)
+
+
+    def update_resolution(self, resolution):
+        self.resolution = resolution
+        self.dg = DiscreteGridUtils.DiscreteGridUtils(grid_size=self.resolution)
+
+    '''
+    for a path where there are multiple points that are collinear
+    keep the first and last points and remove the rest.
+    '''
+    def remove_collinear_points(self, original_path):
+        path_in_gird = []
+
+        for nav_pt in original_path:
+            nav_pt_in_grid = self.dg.continuous_to_discrete((nav_pt[0], nav_pt[1],  nav_pt[2]))
+            path_in_gird.append(nav_pt_in_grid)
+
+        new_path_in_grid = super(PathPruning_wScale, self).remove_collinear_points(path_in_gird)
+
+        new_path = []
+        for nav_pt_in_grid in new_path_in_grid:
+            nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0], nav_pt_in_grid[1],  nav_pt_in_grid[2]))
+            new_path.append(nav_pt)
+
+        return new_path
+
+    '''
+    1. given a path: [a, b, c, d];
+    2. iterate points in a way like [a, b], [a, c], [a, d], [b, c] ...
+    3. draw a line with bresenham and see if obstacle point is in it
+    4. if not, remove middle point and continue
+    '''
+    def path_pruning_bresenham3d(self, path, local_obstacle):
+        path_in_gird = []
+
+        for nav_pt in original_path:
+            nav_pt_in_grid = self.dg.continuous_to_discrete((nav_pt[0], nav_pt[1],  nav_pt[2]))
+            path_in_gird.append(nav_pt_in_grid)
+
+        final_path_in_grid = super(PathPruning_wScale, self).path_pruning_bresenham3d(path_in_gird, local_obstacle)
+
+        final_path = []
+        for nav_pt_in_grid in final_path_in_grid:
+            nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0], nav_pt_in_grid[1],  nav_pt_in_grid[2]))
+            new_path.append(nav_pt)
+
+        return final_path
 
 if __name__ == '__main__':
 

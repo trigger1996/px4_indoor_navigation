@@ -8,8 +8,10 @@ from heapq import heappush, heappop
 from nav_msgs.msg import OccupancyGrid
 import rospy
 
+DEFAULT_UAV_ALT = 1.5
+
 class A_star_2D(object):
-    def __init__(self, end_pos, vehicle_width = 0.8, vehicle_length = 0.8, resolution = 0.05):
+    def __init__(self, end_pos, vehicle_width = 0.8, vehicle_length = 0.8, resolution = 0.2):
         self.end_pos = end_pos
 
         # basic map info
@@ -55,8 +57,8 @@ class A_star_2D(object):
         path = [current]
         while current in came_from:
             current = came_from[current]
-            path.append(current)
-        return path
+            path.append((current[0], current[1], DEFAULT_UAV_ALT / self.resolution))
+        return path[::-1]
 
 
     # astar function returns a list of points (shortest path)
@@ -207,7 +209,7 @@ class A_star_2D(object):
 
     def find_alternative_closest_point(self, final_pos):
         dst = 10 ** 6
-        target_pt = [final_pos[0], final_pos[1]]
+
         for node in self.close_set:
             x = node[0]
             y = node[1]
@@ -219,12 +221,15 @@ class A_star_2D(object):
         return target_pt
 
     def find_alternative_path(self, final_pos):
+        final_pos = self.dg.continuous_to_discrete((final_pos[0], final_pos[1], 5))
+        final_pos = (final_pos[0], final_pos[1])
+
         target_pt = self.find_alternative_closest_point(final_pos)
         path_in_grid = self.reconstruct_path(self.came_from, (target_pt[0], target_pt[1]))
 
         path = []
         for nav_pt_in_grid in path_in_grid:
-            nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0],  nav_pt_in_grid[1], 5))
+            nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0],  nav_pt_in_grid[1], DEFAULT_UAV_ALT / self.resolution))
             path.append(nav_pt)
         #print("path", path)
         return path

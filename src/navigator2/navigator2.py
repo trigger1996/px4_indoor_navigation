@@ -22,7 +22,7 @@
 
 import threading
 import time
-from path_optimization.path_pruning import PathPruning
+from path_optimization.path_pruning import PathPruning, PathPruning_wScale
 # for ros
 import rospy
 from geometry_msgs.msg import PoseStamped, Twist
@@ -116,6 +116,7 @@ class Navigator:
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
+        self.path_prune_2D = PathPruning_wScale(obstacle_distance=8, resolution=0.2)
         time.sleep(2)
 
 
@@ -145,10 +146,10 @@ class Navigator:
 
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
                 # print ('Inside inner loop!')
-                self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
-                self.dg.update_offset([self.occupancy_grid_raw.info.origin.position.x,
-                                       self.occupancy_grid_raw.info.origin.position.y,
-                                       self.occupancy_grid_raw.info.origin.position.z])
+                #self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
+                #self.dg.update_offset([self.occupancy_grid_raw.info.origin.position.x,
+                #                       self.occupancy_grid_raw.info.origin.position.y,
+                #                       self.occupancy_grid_raw.info.origin.position.z])
 
                 #self.cur_target_position_raw = (self.local_pose_raw[0], self.local_pose_raw[1], self.local_pose_raw[2])
                 # 几个比较坑的问题
@@ -162,7 +163,7 @@ class Navigator:
                                                           self.cur_target_position_raw[1],
                                                           self.cur_target_position_raw[2]))   # in_grids
 
-                self.algo = astar.astar_2d.A_star_2D(end_pos)       # end pos in grids
+                self.algo = astar.astar_2d.A_star_2D(self.cur_target_position_raw)
 
                 self.algo.update_map(self.occupancy_grid_raw)
 
@@ -174,43 +175,18 @@ class Navigator:
                 if path != None:
                     print("2D path found!")
 
-                    #publish raw path plan.
-                    m_arr = MarkerArray()
-                    marr_index = 0
-                    for point in path:
-                        mk = Marker()
-                        mk.header.frame_id="map"
-                        mk.action=mk.ADD
-                        mk.id=marr_index
-                        marr_index+=1
-                        mk.color.r = 1.0
-                        mk.color.a = 1.0
-                        mk.type=mk.CUBE
-                        mk.scale.x = 0.6
-                        mk.scale.y = 0.6
-                        mk.scale.z = 0.6
-                        mk.pose.position.x = point[0]
-                        mk.pose.position.y = point[1]
-                        mk.pose.position.z = point[2]
-                        m_arr.markers.append(mk)
-                    self.path_plan_pub.publish(m_arr)
-
-                else:
-                    print("2D path NOT found!")
-                    alternative_path = self.algo.find_alternative_path([end_pos[0], end_pos[1]])
-
-                    print("Alternative path found: ", alternative_path)
+                    # publish raw path plan.
                     m_arr = MarkerArray()
                     marr_index = 0
                     for point in alternative_path:
                         mk = Marker()
-                        mk.header.frame_id="map"
-                        mk.action=mk.ADD
-                        mk.id=marr_index
-                        marr_index+=1
+                        mk.header.frame_id = "map"
+                        mk.action = mk.ADD
+                        mk.id = marr_index
+                        marr_index += 1
                         mk.color.r = 1.0
                         mk.color.a = 1.0
-                        mk.type=mk.CUBE
+                        mk.type = mk.CUBE
                         mk.scale.x = 0.6
                         mk.scale.y = 0.6
                         mk.scale.z = 0.6
@@ -219,6 +195,44 @@ class Navigator:
                         mk.pose.position.z = point[2]
                         m_arr.markers.append(mk)
                     self.path_plan_pub.publish(m_arr)
+
+                    path = self.path_prune_2D.remove_collinear_points(path)
+                    # 因为在闭列表内，所以不可能找不到备用路径的
+                    print("Path: ", path)
+
+                else:
+                    print("2D path NOT found!")
+                    alternative_path = self.algo.find_alternative_path([self.cur_target_position_raw[0], self.cur_target_position_raw[1]])
+
+                    # publish raw path plan.
+                    m_arr = MarkerArray()
+                    marr_index = 0
+                    for point in alternative_path:
+                        mk = Marker()
+                        mk.header.frame_id = "map"
+                        mk.action = mk.ADD
+                        mk.id = marr_index
+                        marr_index += 1
+                        mk.color.r = 1.0
+                        mk.color.a = 1.0
+                        mk.type = mk.CUBE
+                        mk.scale.x = 0.6
+                        mk.scale.y = 0.6
+                        mk.scale.z = 0.6
+                        mk.pose.position.x = point[0]
+                        mk.pose.position.y = point[1]
+                        mk.pose.position.z = point[2]
+                        m_arr.markers.append(mk)
+                    self.path_plan_pub.publish(m_arr)
+
+                    # 路径简化
+                    alternative_path = self.path_prune_2D.remove_collinear_points(alternative_path)
+
+                    # 因为在闭列表内，所以不可能找不到备用路径的
+                    print("Alternative path found: ", alternative_path)
+
+
+
 
 
                 time.sleep(0.05) # wait for new nav task.
