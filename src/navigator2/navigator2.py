@@ -96,13 +96,15 @@ class Navigator:
 
         self.cur_command_id = 0
         self.prev_command_id = 0
-        self.cur_target_position=None
+        self.cur_target_position=None           # in grids
+        self.cur_target_position_raw = None     # in meters
 
         self.task_id = -1
         self.obstacle_set_mutex = threading.Lock()  # mutex.acquire(timeout);mutex.release()
         self.occupancy_grid_mutex = threading.Lock()
         self.nav_command_mutex = threading.Lock()  # for nav command in dstar and ros high level command.
-        self.local_pose = None
+        self.local_pose = None                  # in meters
+        self.local_pose_raw = None              # in meters
         t1 = threading.Thread(target=self.ros_thread)
         t1.start()
 
@@ -137,15 +139,27 @@ class Navigator:
             end_pos = self.get_latest_target()
 
             current_pos = self.get_current_pose() # TODO:fix this.
-            last_pos    = self.get_current_pose()
             if current_pos is None:
                 #print ('current pose not valid!')
                 continue
 
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
                 # print ('Inside inner loop!')
-                current_pos = self.get_current_pose()
-                self.algo = astar.astar_2d.A_star_2D(end_pos)
+                self.dg = DiscreteGridUtils.DiscreteGridUtils(grid_size=self.occupancy_grid_raw.info.resolution)
+
+                #self.cur_target_position_raw = (self.local_pose_raw[0], self.local_pose_raw[1], self.local_pose_raw[2])
+                # 几个比较坑的问题
+                # 1 地图提供的origin是地图(0, 0, 0)点对应实际坐标系的位置
+                # 2 2D地图和3D地图的分辨率是不同的
+                current_pos = self.get_current_pose()       # in grids
+                current_pos_in_2Dmap = self.dg.continuous_to_discrete((self.local_pose_raw[0] - self.occupancy_grid_raw.info.origin.position.x,
+                                                                       self.local_pose_raw[1] - self.occupancy_grid_raw.info.origin.position.y,
+                                                                       1.4 - self.occupancy_grid_raw.info.origin.position.z))                   # in_grids
+                end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0] - self.occupancy_grid_raw.info.origin.position.x,
+                                                          self.cur_target_position_raw[1] - self.occupancy_grid_raw.info.origin.position.y,
+                                                          self.cur_target_position_raw[2] - self.occupancy_grid_raw.info.origin.position.z))   # in_grids
+
+                self.algo = astar.astar_2d.A_star_2D(end_pos)       # end pos in grids
 
                 self.algo.update_map(self.occupancy_grid_raw)
 
@@ -153,16 +167,18 @@ class Navigator:
                 data = self.algo.map_list_to_occupancy_grid()
                 self.occupancy_grid_pub.publish(data)
 
-                path = self.algo.find_path(current_pos, self.cur_target_position)
+                path = self.algo.find_path(current_pos_in_2Dmap, end_pos)
                 if path != None:
                     print("2D path found!")
 
-                    dg = DiscreteGridUtils(grid_size = self.occupancy_grid_raw)
                     #publish raw path plan.
                     m_arr = MarkerArray()
                     marr_index = 0
                     for next_move in path:
-                        point = dg.discrete_to_continuous_target((next_move[0],next_move[1], 5))
+                        point = self.dg.discrete_to_continuous_target((next_move[0],  next_move[1], 5))
+                        point = (point[0] + self.occupancy_grid_raw.info.origin.position.x,
+                                 point[1] + self.occupancy_grid_raw.info.origin.position.y,
+                                 point[2] + self.occupancy_grid_raw.info.origin.position.z)
                         mk = Marker()
                         mk.header.frame_id="map"
                         mk.action=mk.ADD
@@ -182,9 +198,33 @@ class Navigator:
 
                 else:
                     print("2D path NOT found!")
-                    alternative_nav_pt = astar.astar_2d.find_alternative_cloest_point([end_pos[0], end_pos[1]], self.algo.closed)
+                    alternative_path = self.algo.find_alternative_path([end_pos[0], end_pos[1]])
 
-                    print("alternative_pt, ", [alternative_nav_pt[0], alternative_nav_pt[1], 1.4])
+                    m_arr = MarkerArray()
+                    marr_index = 0
+                    for next_move in alternative_path:
+                        point = self.dg.discrete_to_continuous_target((next_move[0], next_move[1], 5))
+                        point = (point[0] + self.occupancy_grid_raw.info.origin.position.x,
+                                 point[1] + self.occupancy_grid_raw.info.origin.position.y,
+                                 point[2] + self.occupancy_grid_raw.info.origin.position.z)
+
+                        mk = Marker()
+                        mk.header.frame_id="map"
+                        mk.action=mk.ADD
+                        mk.id=marr_index
+                        marr_index+=1
+                        mk.color.r = 1.0
+                        mk.color.a = 1.0
+                        mk.type=mk.CUBE
+                        mk.scale.x = 0.6
+                        mk.scale.y = 0.6
+                        mk.scale.z = 0.6
+                        mk.pose.position.x = point[0]
+                        mk.pose.position.y = point[1]
+                        mk.pose.position.z = point[2]
+                        m_arr.markers.append(mk)
+                    self.path_plan_pub.publish(m_arr)
+
 
                 time.sleep(0.05) # wait for new nav task.
 
@@ -255,7 +295,8 @@ class Navigator:
 
     def set_target_postion(self, target_position):
         self.found_path = True
-        self.cur_target_position = self.dg.continuous_to_discrete(target_position)
+        self.cur_target_position_raw = target_position
+        self.cur_target_position     = self.dg.continuous_to_discrete(target_position)
         print("Current target position in grid: ", self.cur_target_position)
         #print("Set Current Position to: ", target_position[0], target_position[1], target_position[2])
 
@@ -354,6 +395,7 @@ class Navigator:
 
     def local_pose_callback(self, msg):
         pose_ = msg.pose.position #TODO:do fusion with visual slam.
+        self.local_pose_raw = (pose_.x,pose_.y,pose_.z)
         self.local_pose = self.dg.continuous_to_discrete((pose_.x,pose_.y,pose_.z))
         #print ('local_pose set!!!')
 

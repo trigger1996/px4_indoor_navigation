@@ -20,8 +20,10 @@ class A_star_2D(object):
         self.map_free_indexed     = None
         self.resolution = 0
 
-        self.openlist = []
-        self.closed = []
+        self.came_from = {}
+
+        self.openSet   = None
+        self.close_set = None
         self.movement_list = astar_config.astar_config['movement_list_2d']
         self.func_h = astar_config.astar_config['func_h_2d']
         #self.horiontal_radius, self.vertical_radius = self.__aircraft_radius(aircraft_obj['aircraft_points'])
@@ -48,25 +50,28 @@ class A_star_2D(object):
 
     # astar function returns a list of points (shortest path)
     def find_path(self, start, goal):
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]  # 8个方向
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0) , (1, 1), (1, -1), (-1, 1), (-1, -1)]  # 8个方向
 
-        close_set = set()
-        came_from = {}
+        start = (start[0], start[1])
+        goal  = (goal[0], goal[1])
+
+        self.close_set = set()
+        self.came_from = {}
         gscore = {start: 0}
         fscore = {start: self.heuristic_cost_estimate(start, goal)}
 
-        openSet = []
-        heappush(openSet, (fscore[start], start))  # 往堆中插入一条新的值
+        self.openSet = []
+        heappush(self.openSet, (fscore[start], start))  # 往堆中插入一条新的值
 
         # while openSet is not empty
-        while openSet:
+        while self.openSet:
             # current := the node in openSet having the lowest fScore value
-            current = heappop(openSet)[1]  # 从堆中弹出fscore最小的节点
+            current = heappop(self.openSet)[1]  # 从堆中弹出fscore最小的节点
 
             if current == goal:
-                return self.reconstruct_path(came_from, current)
+                return self.reconstruct_path(self.came_from, current)
 
-            close_set.add(current)
+            self.close_set.add(current)
 
             for i, j in directions:  # 对当前节点的 8 个相邻节点一一进行检查
                 neighbor = current[0] + i, current[1] + j
@@ -74,7 +79,9 @@ class A_star_2D(object):
                 ## 判断节点是否在地图范围内，并判断是否为障碍物
                 if 0 <= neighbor[1] < self.map_height:
                     if 0 <= neighbor[0] < self.map_width:
-                        if self.map_array[neighbor[1]][neighbor[0]] == 100:  # 100为障碍物
+                        if self.map_array[neighbor[1]][neighbor[0]] > 45:  # 100为障碍物
+                            continue
+                        if self.map_array[neighbor[1]][neighbor[0]] == -1:
                             continue
                     else:
                         # array bound y walls
@@ -84,21 +91,22 @@ class A_star_2D(object):
                     continue
 
                 # Ignore the neighbor which is already evaluated.
-                if neighbor in close_set:
+                if neighbor in self.close_set:
                     continue
 
-                #  The distance from start to a neighbor via current
+                # The distance from start to a neighbor via current
                 tentative_gScore = gscore[current] + self.dist_between(current, neighbor)
 
-                if neighbor not in [i[1] for i in openSet]:  # Discover a new node
-                    heappush(openSet, (fscore.get(neighbor, np.inf), neighbor))
+                if neighbor not in [i[1] for i in self.openSet]:  # Discover a new node
+                    heappush(self.openSet, (fscore.get(neighbor, np.inf), neighbor))
                 elif tentative_gScore >= gscore.get(neighbor, np.inf):  # This is not a better path.
                     continue
 
-                    # This path is the best until now. Record it!
-                came_from[neighbor] = current
+                # This path is the best until now. Record it!
+                self.came_from[neighbor] = current
                 gscore[neighbor] = tentative_gScore
                 fscore[neighbor] = tentative_gScore + self.heuristic_cost_estimate(neighbor, goal)
+
 
         return None
 
@@ -153,3 +161,23 @@ class A_star_2D(object):
         data.header.stamp = rospy.Time.now()
 
         return data
+
+    def find_alternative_closest_point(self, final_pos):
+        dst = 10 ** 6
+        target_pt = [final_pos[0], final_pos[1]]
+        for node in self.close_set:
+            x = node[0]
+            y = node[1]
+            # is_valid is confirmed in a*
+            dst_temp = ((x - final_pos[0]) ** 2 + (y - final_pos[1]) ** 2) ** 0.5
+            if dst_temp < dst:
+                target_pt = [x, y]
+                dst = dst_temp
+        return target_pt
+
+    def find_alternative_path(self, final_pos):
+        target_pt = self.find_alternative_closest_point(final_pos)
+        path = self.reconstruct_path(self.came_from, (target_pt[0], target_pt[1]))
+        print("path", path)
+        return path
+
