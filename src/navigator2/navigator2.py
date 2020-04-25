@@ -153,7 +153,7 @@ class Navigator:
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
 
                 if not self.is_local_pose_updated:
-                    Time.sleep(2)
+                    time.sleep(2)
                     continue
                 else:
                     self.is_local_pose_updated = False
@@ -281,7 +281,7 @@ class Navigator:
                         #    self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
                         #    time.sleep(2)
 
-                        time.sleep(1)
+                        time.sleep(2)
 
                     continue
 
@@ -316,7 +316,7 @@ class Navigator:
                     #    self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
                     #    time.sleep(2)
 
-                    time.sleep(1)
+                    time.sleep(2)
                     current_pos = self.get_current_pose()
 
                 time.sleep(0.05) # wait for new nav task.
