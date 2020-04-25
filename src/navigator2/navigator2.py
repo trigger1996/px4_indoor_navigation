@@ -47,6 +47,7 @@ import pyquaternion
 import astar.astar
 import astar.astar_2d
 import astar.driver
+import occupancy_grid_helper
 
 import time
 import math
@@ -108,6 +109,8 @@ class Navigator:
         t1 = threading.Thread(target=self.ros_thread)
         t1.start()
 
+        self.is_local_pose_updated = False
+
         self.navigator_status_pub = rospy.Publisher('/gi/navigator_status', String, queue_size=10)
         self.path_plan_pub = rospy.Publisher('/gi/navi_path_plan',MarkerArray,queue_size=10)
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
@@ -132,7 +135,7 @@ class Navigator:
             time.sleep(1)
 
         print("wait for initial mapping...")
-        time.sleep(30)
+        #time.sleep(30)
 
         while self.mavros_state == "OFFBOARD" and not(rospy.is_shutdown()):
 
@@ -148,6 +151,13 @@ class Navigator:
                 continue
 
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
+
+                if not self.is_local_pose_updated:
+                    Time.sleep(2)
+                    continue
+                else:
+                    self.is_local_pose_updated = False
+
                 # print ('Inside inner loop!')
                 #self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
                 #self.dg.update_offset([self.occupancy_grid_raw.info.origin.position.x,
@@ -167,9 +177,11 @@ class Navigator:
                                                           self.cur_target_position_raw[2]))   # in_grids
 
                 self.algo = astar.astar_2d.A_star_2D(self.cur_target_position_raw,
+                                                     vehicle_width=2, vehicle_length=2,
                                                      resolution=self.occupancy_grid_raw.info.resolution)
 
-                self.algo.update_map(self.occupancy_grid_raw)
+                occupancy_map_resized = occupancy_grid_helper.resize(self.occupancy_grid_raw, 0.2)
+                self.algo.update_map(occupancy_map_resized)
 
                 # for debugging
                 data = self.algo.map_list_to_occupancy_grid()
@@ -256,9 +268,9 @@ class Navigator:
                         self.current_pos = next_pos
 
                         #axis transform                        # TODO
-                        #if not self.algo.is_valid(next_pos[0], next_pos[1], True):
-                        #    print ('Path not valid!')
-                        #    break
+                        if not self.algo.is_valid(next_pos[0], next_pos[1], True):
+                            print ('Path not valid!')
+                            break
                         relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
 
                         #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
@@ -288,9 +300,9 @@ class Navigator:
                     #print ("next_pose: ", next_pos)
 
                     # TODO
-                    # if not self.algo.is_valid(next_pos[0], next_pos[1], True):
-                    #    print ('Path not valid!')
-                    #    break
+                    if not self.algo.is_valid(next_pos[0], next_pos[1], True):
+                        print ('Path not valid!')
+                        break
 
                     self.current_pos = next_pos
 
@@ -479,6 +491,7 @@ class Navigator:
         self.local_pose_raw = (pose_.x,pose_.y,pose_.z)
         self.local_pose = self.dg.continuous_to_discrete((pose_.x,pose_.y,pose_.z))
         #print ('local_pose set!!!')
+        self.is_local_pose_updated = True
 
     def get_local_pose(self): # in mavros axis.for command.
         #print ('self.local_pose',self.local_pose)

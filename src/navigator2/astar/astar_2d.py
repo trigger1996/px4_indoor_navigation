@@ -8,7 +8,7 @@ from heapq import heappush, heappop
 from nav_msgs.msg import OccupancyGrid
 import rospy
 
-DEFAULT_UAV_ALT = 1.8
+DEFAULT_UAV_ALT = 1.6
 explored_alternative_pt = []    # x, y
 
 class A_star_2D(object):
@@ -199,8 +199,8 @@ class A_star_2D(object):
         data.info.origin.position.y = self.map_origin[1]
         data.info.origin.position.z = self.map_origin[2]
 
-        for y in range(0, data.info.width):
-            for x in range(0, data.info.height):
+        for y in range(0, data.info.height):
+            for x in range(0, data.info.width):
                 data.data.append(-1)
 
         for (x, y) in self.map_obstacle_indexed:
