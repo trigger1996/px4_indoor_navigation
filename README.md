@@ -1,3 +1,12 @@
+#       TODO
+        1 搞定动态避障，三维二维都行
+        2 上传Navigator2的Debug版本的branch
+        3 整理Navigator2代码
+        4 整理roslaunch文件夹和备份
+        5 整理操作流程
+        6 结题报告
+
+
 #	使用大致流程
 
 	0 
