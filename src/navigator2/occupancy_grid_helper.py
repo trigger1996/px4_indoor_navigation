@@ -28,8 +28,6 @@ def resize(map_in, target_resolution):
             srcx = int(min(srcx, map_in.info.width - 1))
 
             map_out.data[y * map_out.info.width + x] = map_in.data[srcy * map_in.info.width + srcx]
-            if map_out.data[y * map_out.info.width + x] != -1:
-                iiiii = 1
 
     return map_out
 

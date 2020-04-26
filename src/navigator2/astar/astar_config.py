@@ -62,5 +62,9 @@ astar_config={
 
     'func_h':    square,
     'func_h_2d': square_2d,
-    'z_move_cost': 35
+    'z_move_cost': 35,
+    'default_uav_altitude' : 1.55,              # in meters
+    'alternative_navpt_min_radius' : 2.5,       # in meters
+    'uav_width'  : 1.5,                         # in meters
+    'uav_length' : 1.5                          # in meters
 }

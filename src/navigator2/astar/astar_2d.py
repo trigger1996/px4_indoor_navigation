@@ -8,11 +8,15 @@ from heapq import heappush, heappop
 from nav_msgs.msg import OccupancyGrid
 import rospy
 
-DEFAULT_UAV_ALT = 1.6
+DEFAULT_UAV_ALT = astar_config.astar_config['default_uav_altitude']
+ALTERNATIVE_NAV_PT_MIN_RADIUS = astar_config.astar_config['alternative_navpt_min_radius']
 explored_alternative_pt = []    # x, y
 
 class A_star_2D(object):
-    def __init__(self, end_pos, vehicle_width = 1.4, vehicle_length = 1.4, resolution = 0.05):
+    def __init__(self, end_pos,
+                 vehicle_width = astar_config.astar_config['uav_width'], vehicle_length = astar_config.astar_config['uav_length'],
+                 resolution = 0.05):
+
         self.end_pos = end_pos
 
         # basic map info
@@ -230,7 +234,7 @@ class A_star_2D(object):
                     is_this_point_navigated = False
                     for i in range(0, explored_alternative_pt.__len__()):
                         pt_in_grid = explored_alternative_pt[i]
-                        if self.dist_between(pt_in_grid, (x, y)) <= 2.5 / self.resolution:       # default 1.0
+                        if self.dist_between(pt_in_grid, (x, y)) <= ALTERNATIVE_NAV_PT_MIN_RADIUS / self.resolution:       # default 1.0
                             is_this_point_navigated = True
                             break
                     if is_this_point_navigated:

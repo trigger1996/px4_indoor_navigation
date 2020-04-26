@@ -57,6 +57,7 @@ import thread
 
 #from Pos2PosController import Pos2PosController as Controller  # TODO:re-implement this.
 from SimController import Controller as Controller
+from SimController import atan2_yaw as atan2_yaw
 import DiscreteGridUtils
 
 import numpy as np
@@ -122,6 +123,7 @@ class Navigator:
         self.is_use_bresenham = False           # 这个开了以后是用3D地图避障
         self.is_remove_collinear_pts = True     # 这个开了以后会飞的更快，关了有更好的避障效果
                                                 # 避障可能会让飞机在某些地方“飞不动”
+        self.is_rotate_uav = True               # 飞行过程中机头指向目标，建议开启
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
@@ -141,7 +143,7 @@ class Navigator:
             time.sleep(1)
 
         print("wait for initial mapping...")
-        #time.sleep(30)
+        time.sleep(10)
 
         while self.mavros_state == "OFFBOARD" and not(rospy.is_shutdown()):
 
@@ -299,6 +301,11 @@ class Navigator:
                             self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
                             time.sleep(2)
 
+                        # rotate vehicle, the position is no use
+                        if self.is_rotate_uav:
+                            target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
+                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], yaw = target_yaw)
+
                     continue
 
 
@@ -338,6 +345,11 @@ class Navigator:
                         self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
                         time.sleep(2)
 
+                        # rotate vehicle, the position is no use
+                        if self.is_rotate_uav:
+                            target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
+                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], yaw = target_yaw)
+
                 current_pos = self.get_current_pose()
                 time.sleep(0.05) # wait for new nav task.
 
@@ -356,41 +368,6 @@ class Navigator:
         z_distance = (p2[2] - p1[2])**2
 
         return np.sqrt(x_distance + y_distance + z_distance)
-
-
-    def remove_collinear_points(self, original_path):
-
-        new_path = []
-        print ("original_path length: ", len(original_path))
-
-        length = len(original_path) - 2
-        new_path.append(original_path[0])
-        # new_path.append(original_path[-1])
-
-        print(original_path)
-
-        for i in range(length):
-
-            distance13 = self.distance(original_path[i+2], original_path[i])
-            distance12 = self.distance(original_path[i+1], original_path[i])
-            distance23 = self.distance(original_path[i+2], original_path[i+1])
-
-            print("distance13 - distance12 - distance23 :", distance13 - distance12 - distance23 )
-            if abs(distance13 - distance12 - distance23)  < 0.001:
-                # print ("points collinear")
-                continue
-
-            else:
-                print(original_path[i+1])
-                print("not found collinear point")
-                new_path.append(original_path[i+1])
-
-        print("new path length: ", len(new_path))
-        print(new_path)
-
-        return new_path
-
-
 
 
     def terminate_navigating(self):
@@ -567,14 +544,3 @@ if __name__ == '__main__':
     #FLU meters.
     nav.set_target_postion((target_x, target_y, target_z))
     nav.keep_navigating()
-
-
-
-
-
-
-
-
-
-
-

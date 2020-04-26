@@ -10,6 +10,25 @@ from pyquaternion import Quaternion
 import time
 import math
 
+def atan2_yaw(y, x):
+    val = math.atan2(math.fabs(y), math.fabs(x))
+    if x == 0:
+        if y > 0:
+            return math.pi / 2
+        elif y < 0:
+            return -math.pi / 2
+        else:
+            return 0
+    elif x > 0 and y > 0:
+        return val
+    elif x < 0 and y > 0:
+        return -val + math.pi
+    elif x < 0 and y < 0:
+        return val - math.pi
+    elif x > 0 and y < 0:
+        return -val
+    else:
+        return val
 
 class Controller:
     def __init__(self):
