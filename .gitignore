@@ -1,3 +1,8 @@
 ./src/ygz_slam_ros/voc/brief_k10L6.bin
 ./src/ygz_slam_ros/Thirdparty/DBow3/orbvoc.dbow3
+
+# 
 *.pyc
+./src/navigator/*.pyc
+./src/navigator2/*.pyc
+
