@@ -10,13 +10,33 @@ from pyquaternion import Quaternion
 import time
 import math
 
-def atan2_yaw(y, x):
+# 注意这边输入是(x, y)
+'''
+
+Coordinate System: FLU
+
+          x 0 deg
+           ^
+           |
+ -90  <----o---- y
+ deg       |       90 deg
+           |
+
+'''
+def atan2_yaw(x, y):
     val = math.atan2(math.fabs(y), math.fabs(x))
     if x == 0:
-        if y > 0:
+        if y < 0:
             return math.pi / 2
-        elif y < 0:
+        elif y > 0:
             return -math.pi / 2
+        else:
+            return 0
+    elif y == 0:
+        if x > 0:
+            return 0
+        elif x < 0:
+            return pi
         else:
             return 0
     elif x > 0 and y > 0:

@@ -192,6 +192,12 @@ class Navigator:
                 else:
                     self.is_obstacle_set_updated = False
 
+                # 测试atan2_yaw
+                target_yaw = atan2_yaw(2, -1) * 180. / math.pi
+                self.controller.mav_move(0, 0, 1.5, yaw=target_yaw)
+
+                continue
+
                 current_pos = self.get_current_pose()       # in grids
                 end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0],
                                                           self.cur_target_position_raw[1],
