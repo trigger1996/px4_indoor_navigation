@@ -123,14 +123,14 @@ class PathPruning_wScale(PathPruning):
             nav_pt_in_grid = self.dg.continuous_to_discrete((nav_pt[0], nav_pt[1],  nav_pt[2]))
             path_in_gird.append(nav_pt_in_grid)
 
-        new_path_in_grid = super(PathPruning_wScale, self).remove_collinear_points(path_in_gird)
+        final_path_in_grid = super(PathPruning_wScale, self).remove_collinear_points(path_in_gird)
 
-        new_path = []
-        for nav_pt_in_grid in new_path_in_grid:
+        final_path = []
+        for nav_pt_in_grid in final_path_in_grid:
             nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0], nav_pt_in_grid[1],  nav_pt_in_grid[2]))
-            new_path.append(nav_pt)
+            final_path.append(nav_pt)
 
-        return new_path
+        return final_path
 
     '''
     1. given a path: [a, b, c, d];
@@ -140,17 +140,22 @@ class PathPruning_wScale(PathPruning):
     '''
     def path_pruning_bresenham3d(self, path, local_obstacle):
         path_in_gird = []
+        local_obstacle_in_grid = set()
 
-        for nav_pt in original_path:
+        for nav_pt in path:
             nav_pt_in_grid = self.dg.continuous_to_discrete((nav_pt[0], nav_pt[1],  nav_pt[2]))
             path_in_gird.append(nav_pt_in_grid)
 
-        final_path_in_grid = super(PathPruning_wScale, self).path_pruning_bresenham3d(path_in_gird, local_obstacle)
+        for p in local_obstacle:
+            point = self.dg.continuous_to_discrete((p[0],p[1],p[2]))
+            local_obstacle_in_grid.add(point)
+
+        final_path_in_grid = super(PathPruning_wScale, self).path_pruning_bresenham3d(path_in_gird, local_obstacle_in_grid)
 
         final_path = []
         for nav_pt_in_grid in final_path_in_grid:
             nav_pt = self.dg.discrete_to_continuous_target((nav_pt_in_grid[0], nav_pt_in_grid[1],  nav_pt_in_grid[2]))
-            new_path.append(nav_pt)
+            final_path.append(nav_pt)
 
         return final_path
 

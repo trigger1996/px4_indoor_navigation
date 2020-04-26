@@ -109,7 +109,10 @@ class Navigator:
         t1 = threading.Thread(target=self.ros_thread)
         t1.start()
 
+        self.obs_set_raw = None
+
         self.is_local_pose_updated = False
+        self.is_obstacle_set_updated = False
 
         self.navigator_status_pub = rospy.Publisher('/gi/navigator_status', String, queue_size=10)
         self.path_plan_pub = rospy.Publisher('/gi/navi_path_plan',MarkerArray,queue_size=10)
@@ -153,10 +156,16 @@ class Navigator:
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
 
                 if not self.is_local_pose_updated:
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                 else:
                     self.is_local_pose_updated = False
+
+                if not self.is_obstacle_set_updated:
+                    time.sleep(1)
+                    continue
+                else:
+                    self.is_obstacle_set_updated = False
 
                 # print ('Inside inner loop!')
                 #self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
@@ -213,6 +222,7 @@ class Navigator:
                     self.path_plan_pub.publish(m_arr)
 
                     path = self.path_prune_2D.remove_collinear_points(path)
+                    path = self.path_prune_2D.path_pruning_bresenham3d(path, self.obs_set_raw)
                     # 因为在闭列表内，所以不可能找不到备用路径的
                     print("Path: ", path)
 
@@ -243,6 +253,7 @@ class Navigator:
 
                     # 路径简化
                     alternative_path = self.path_prune_2D.remove_collinear_points(alternative_path)
+                    alternative_path = self.path_prune_2D.path_pruning_bresenham3d(alternative_path, self.obs_set_raw)
 
                     # 因为在闭列表内，所以不可能找不到备用路径的
                     print("Alternative path found: ", alternative_path)
@@ -471,17 +482,22 @@ class Navigator:
         self.occupancy_grid_raw = msg
 
     def octomap_update_callback(self, msg):  # as pointcloud2.
-        obs_set = set()
+        obs_set     = set()
+        obs_set_raw = set()
         for p in pc2.read_points(msg, field_names=("x", "y", "z"), skip_nans=True):
             #print " x : %f  y: %f  z: %f" % (p[0], p[1], p[2])
             point = self.dg.continuous_to_discrete((p[0],p[1],p[2]))
             #print ('point:',point)
             obs_set.add(point)
+            obs_set.add(p)
         acquired = self.obstacle_set_mutex.acquire(True)  # blocking.
         if acquired:
             #print('octomap updated!')
             self.driver.set_obstacle_set(obs_set)
+            self.obs_set_raw = obs_set_raw
             self.obstacle_set_mutex.release()
+
+            self.is_obstacle_set_updated = True
             return
         else:
             print ('Lock not acquired!')
