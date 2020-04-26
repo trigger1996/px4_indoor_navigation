@@ -125,10 +125,10 @@ class Navigator:
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
 
         # Parameters
-        self.is_use_bresenham = navigator2_config['is_use_bresenham']                   # 这个开了以后是用3D地图避障
+        self.is_use_bresenham = navigator2_config['is_use_bresenham']                   # 这个开了以后是用3D地图避障，主要是视觉起作用，但是视觉精度比较低，在小环境内不好用
         self.is_remove_collinear_pts = navigator2_config['is_remove_collinear_pts']     # 这个开了以后会飞的更快，关了有更好的避障效果
                                                                                         # 避障可能会让飞机在某些地方“飞不动”
-        self.is_rotate_uav = navigator2_config['is_rotate_uav']                         # 飞行过程中机头指向目标，建议开启
+        self.is_rotate_uav = navigator2_config['is_rotate_uav']                         # 飞行过程中机头指向目标，开启后能更好发挥视觉作用，但是过快的旋转对激光建图不利
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
@@ -334,7 +334,6 @@ class Navigator:
 
                     #axis transform
                     relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
-
 
 
                     #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
