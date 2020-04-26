@@ -1,6 +1,7 @@
 #       TODO
         1 搞定动态避障，三维二维都行
-        2 上传Navigator2的Debug版本的branch
+          最好加个飞机转向
+        #2 上传Navigator2的Debug版本的branch
         3 整理Navigator2代码，删掉一些不要的，注意2和1是可以并存的，注意加入操作指南（在本文件内）
           最好1的代码也整理一下
         4 整理roslaunch文件夹和备份
