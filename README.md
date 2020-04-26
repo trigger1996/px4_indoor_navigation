@@ -2,10 +2,14 @@
         1 搞定动态避障，三维二维都行
         2 上传Navigator2的Debug版本的branch
         3 整理Navigator2代码，删掉一些不要的，注意2和1是可以并存的，注意加入操作指南（在本文件内）
+          最好1的代码也整理一下
         4 整理roslaunch文件夹和备份
         5 增加1-2张新地图，因为complex_home_4的地图难度太大了，有窗
         6 整理操作流程
         7 结题报告
+
+        注意一下，当前上传版本如果要用navigator2的话需要改下indoor_automatic内的roslaunch文件
+        Navigator.py改成navigator2.py即可
 
 
 #	使用大致流程
