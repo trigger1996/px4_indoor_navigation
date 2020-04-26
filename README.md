@@ -1,22 +1,6 @@
-#       TODO
-        #1 搞定动态避障，三维二维都行
-        #  最好加个飞机转向
-        #2 上传Navigator2的Debug版本的branch
-        3 整理Navigator2代码，删掉一些不要的，注意2和1是可以并存的，注意加入操作指南（在本文件内）
-          最好1的代码也整理一下
-        #4 整理roslaunch文件夹和备份
-        5 增加1-2张新地图，因为complex_home_4的地图难度太大了，有窗
-        6 整理操作流程
-        7 Land（电池监测）
-        8 结题报告
-
-        注意一下，当前上传版本如果要用navigator2的话需要改下indoor_automatic内的roslaunch文件
-        Navigator.py改成navigator2.py即可
-
-
 #	使用大致流程
 
-	0 
+##	0   git基本操作
             git clone https://github.com/trigger1996/px4_indoor_navigator px4_indoor
             cd px4_indoor
             git submodule update --init --recursive
@@ -32,11 +16,11 @@
             cd ~/catkin_ws_ros
             catkin_make -j4 -l4
 
-	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
+##	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
-	2 安装cartographer_ros，版本1.0.0
+##	2 安装cartographer_ros，版本1.0.0
 		https://google-cartographer-ros.readthedocs.io/en/latest/compilation.html
-	3 复制Firmware覆盖原始Firmware
+##	3 复制Firmware覆盖原始Firmware
 
 #	启动方式
 
@@ -129,15 +113,65 @@
                 Terminal 1
                         cd ~/catkin_ws/src/Firmware
                         roslaunch launch/indoor_automatic/complex_home_3_gps.launch
-                直接选一个roslaunch开就好了
-                现在除了simple_environment没有开自动导航，为了测试以外，其他的理论上都是调过的
+
+                随便选一个roslaunch开就好了
+                几个注意点
+##              1 关于GPS，有些地图很难，所以GPS是开的
+                    如果要做测试，可以把里面iris_stereo_rplidar改成iris_stereo_rplidar_no_gps即可
+
+                    顺带提一下使用功能SLAM的影响，因为激光更新频率不高，再加上ROS内部有延迟和我是拿轻薄本跑整个系统
+                    所以延迟优点能感觉到，比靠GPS慢很多
+
+##              2 关于navigator和navigator2
+                    navigator是GAAS组的成果，笔者只是稍微调了下里面的代码，但是发现基本思路很好根本没啥地方能改
+                    它的核心思路：只有确定有障碍的地方是不能过的
+                                地图中unknown和free都可以走
+                                首先用A*估计出大致路径，然后一边走一边动态避障，如果碰到障碍物就停，然后重新规划路径
+                                优点：室外障碍物很少的地方很好用
+                                     视觉生成稠密点云整个观测范围很广（面积很大）
+                                     这是个三维避障算法，能更很完全发挥飞机的优势，障碍物可以直接拉高度爬升从顶上过去
+                                缺点：其实视觉避障离得远还是很准的，离得进会出问题
+                                     精度远低于激光，真的室内在飞机倾斜后建立的Octomap效果比较不行（也可能是我没调参）
+
+                                总结：这套算法可以室外用，室内其实效果没那么好
+
+                    navigator2是笔者根据navigator的方针结果自己搞出来的，当然底子全是GAAS组navigator的底子，不过也换了很多代码，比如A*
+                    核心思路：用激光2D地图导航
+                                首先用A*判断能不能找到目标点的路径
+                                如果不行，则找替代点，因为飞到替代点地图会更新，所以可以找到新的替代点
+                                替代点选取标准：和终点直线距离很近，而且不能重复选取（距离已用替代点半径R的点都不能作为新的替代点）
+                                优点：激光精度高，室内靠激光能很好搞定
+                                缺点：室外不好用
+                                     为了提高A*的搜索效率，所以只有free的栅格能走，就导致了其实基本都是在靠替代点飞
+
+                                总结：所以其实navigator和navigator2不是升级关系，而是各有所长的
+
+                    两个算法都可以测试，只要在roslaunch里注释/取消注释即可
+
+##               使用的室内环境
+                        自己画的几个
+                        simple_environment
+                            简单的方框环境，用来测试slam效果的
+
+                        complex_home_5
+                            难点在于终点在起点的反方向，飞机要转一圈
+
+                        complex_home_4
+                            难点在于过一个有s弯的地方
+                            而且有窗户，飞机钻出窗户就失败了
+                            navigator测了很多次过不去
+                            navigator2有gps可以到达终点，而且比较稳定，但是真机飞类似环境一定要上防撞圈，因为是一直靠撞击过去的
+
+                        complex_home_3
+                            室内环境无门窗，现在确定navigator已经可以飞了
+
+                        complex_home_2
+                            难，飞机现在还不能钻门钻窗，所以基本没测
 
 
 ##	8 Unfinished Business
-                    1 飞机没有限高，在半敞篷的环境里容易做翻越
-                    2 没有failsafe机制和防撞机制，如果出问题飞机应该要能自己降落放弃任务
-                    3 寻路算法最好有创新
-                    4 最好用同样的软件条件，测下Hector那套东西
+                    1 最好用同样的软件条件，测下Hector那套东西
+                    2 结题报告
 
 #	如何调试
 	这份代码的整合度很高，原来GAAS等等其他需要3-4个终端才能开完的代码在这边一个终端全部开完
@@ -150,30 +184,7 @@
 
         2 Firmware源码只能放在~/catkin_ws/src/下，别的地方都不行，测了两天只得到这个结果
 
-        3 model的显示有问题，激光雷达的蓝线不显示但是有数据，回学校以后可以看下以前是怎么做的
-
-        4 下下来以后最好工程文件夹改名，从px4_indoor_navigation改成px4_indoor，不然得进文件一个个改
-
-        5 关于激光-视觉复合建立3D地图，也就是match_pointcloud_and_slam_pose2这个node，现在代码有点问题
-          因为cartographer得到的激光点云是全局坐标系的，而这个模块发布的是本地坐标系的，所以必须在这个node内
-          做坐标变换
-          里面那个is_project_laser本身是说用来添加z轴数据和做旋转的，可以不打开
-          但是现在代码改为在xy方向上平移，所以必须打开
-          必须打开
-          必须打开
-
-          为什么没有去掉这个？因为在真机上可能会有位姿数据/mavros/local_position/pose这个数据读不出来的情况，这个数据不去掉主要是为了提醒调真机的时候注意这个问题
-
-#       使用的室内环境
-                自己画的几个
-                simple_environment
-                    简单的方框环境，用来测试slam效果的
-
-                complex_home_3
-                    室内环境无门窗，现在确定已经可以飞了
-
-                complex_home_2
-                    最难，飞机现在还不能钻门钻窗
+        3 下下来以后最好工程文件夹改名，从px4_indoor_navigation改成px4_indoor，不然得进文件一个个改
 
 #	几个参考
 	为什么在ubuntu 18.04.2上编译会失败
@@ -342,6 +353,10 @@
             param set EKF2_AID_MASK 8
             param set MPC_TILTMAX_AIR 6.0
             param set MPC_TILTMAX_LND 6.0
+
+        其实Px4里面还有几个变量可以用来限高的
+        对这种室内很好用，这里没加进来
+        可以去QGC里面变量栏搜个ALT或者HEIGHT之类的找找
 
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
