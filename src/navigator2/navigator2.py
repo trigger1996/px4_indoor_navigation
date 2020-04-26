@@ -32,7 +32,7 @@ from sensor_msgs.msg import Imu, NavSatFix, PointCloud, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 from visualization_msgs.msg import Marker,MarkerArray
 # for mavros
-from mavros_msgs.msg import GlobalPositionTarget, State, PositionTarget#, Command
+from mavros_msgs.msg import GlobalPositionTarget, State, PositionTarget, BatteryStatus #, Command
 from mavros_msgs.srv import CommandBool, SetMode
 
 
@@ -124,11 +124,17 @@ class Navigator:
         self.path_plan_pub = rospy.Publisher('/gi/navi_path_plan',MarkerArray,queue_size=10)
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
 
+
         # Parameters
         self.is_use_bresenham = navigator2_config['is_use_bresenham']                   # 这个开了以后是用3D地图避障，主要是视觉起作用，但是视觉精度比较低，在小环境内不好用
         self.is_remove_collinear_pts = navigator2_config['is_remove_collinear_pts']     # 这个开了以后会飞的更快，关了有更好的避障效果
                                                                                         # 避障可能会让飞机在某些地方“飞不动”
         self.is_rotate_uav = navigator2_config['is_rotate_uav']                         # 飞行过程中机头指向目标，开启后能更好发挥视觉作用，但是过快的旋转对激光建图不利
+
+        # battery status for emergency landing
+        self.battery_persentage = 1.
+        self.is_enable_low_battery_landing = navigator2_config['enable_low_battery_landing']
+        self.min_battery_threshold = navigator2_config['battery_min_threshold']
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
@@ -192,11 +198,12 @@ class Navigator:
                 else:
                     self.is_obstacle_set_updated = False
 
-                # 测试atan2_yaw
-                target_yaw = atan2_yaw(2, -1) * 180. / math.pi
-                self.controller.mav_move(0, 0, 1.5, yaw=target_yaw)
-
-                continue
+                # Land if battery is low
+                if self.battery_persentage < self.min_battery_threshold:
+                    if self.is_enable_low_battery_landing:
+                        self.controller.mav_move(self.cur_target_position_raw[0], self.cur_target_position_raw[1], 0.)
+                        time.sleep(2)
+                        continue
 
                 current_pos = self.get_current_pose()       # in grids
                 end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0],
@@ -302,21 +309,22 @@ class Navigator:
                             break
                         relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
 
-                        #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
-                        print ('mav_move() input: relative pos=',next_pos)
-
-                        if self.is_use_bresenham:
-                            while self.distance(self.local_pose_raw, next_pos) >= 0.66:
-                                self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True)  # TODO:fix this.
-                                time.sleep(2)
-                        else:
-                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
-                            time.sleep(2)
-
-                        # rotate vehicle, the position is no use
+                        # calculate deired vehicle yaw
                         if self.is_rotate_uav:
                             target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
-                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], yaw = target_yaw)
+                        else:
+                            target_yaw = None
+
+                        # move vehicle
+                        print ('mav_move() input: relative pos=',next_pos)
+                        if self.is_use_bresenham:
+                            while self.distance(self.local_pose_raw, next_pos) >= 0.66:
+                                self.controller.mav_move(next_pos[0],next_pos[1],next_pos[2], abs_mode=True, yaw = target_yaw)
+                                time.sleep(2)
+                        else:
+                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True, yaw = target_yaw)
+                            time.sleep(2)
+
 
                     continue
 
@@ -341,22 +349,22 @@ class Navigator:
                     #axis transform
                     relative_pos_new = (-relative_pos[0], -relative_pos[1], relative_pos[2])
 
+                    # calculate deired vehicle yaw
+                    if self.is_rotate_uav:
+                        target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
+                    else:
+                        target_yaw = None
 
-                    #self.controller.mav_move(*relative_pos_new,abs_mode=False) # TODO:fix this.
+                    # move vehicle
                     print ('mav_move() input: relative pos=',next_pos)
                     if self.is_use_bresenham:
                         while self.distance(self.local_pose_raw, next_pos) >= 0.66:
-                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2],
-                                                     abs_mode=True)  # TODO:fix this.
+                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True,
+                                                     yaw=target_yaw)
                             time.sleep(2)
                     else:
-                        self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True)  # TODO:fix this.
+                        self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], abs_mode=True, yaw=target_yaw)
                         time.sleep(2)
-
-                        # rotate vehicle, the position is no use
-                        if self.is_rotate_uav:
-                            target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
-                            self.controller.mav_move(next_pos[0], next_pos[1], next_pos[2], yaw = target_yaw)
 
                 current_pos = self.get_current_pose()
                 time.sleep(0.05) # wait for new nav task.
@@ -443,6 +451,7 @@ class Navigator:
         self.octomap_cells_vis = rospy.Subscriber("/octomap_point_cloud_centers", PointCloud2, self.octomap_update_callback)
         self.local_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.local_pose_callback)
         self.mavros_sub = rospy.Subscriber("/mavros/state", State, self.mavros_state_callback)
+        self.mavros_sub = rospy.Subscriber("/mavros/battery", BatteryStatus, self.uav_battery_callback)
 
 
         # publishers
@@ -503,6 +512,9 @@ class Navigator:
         self.local_pose = self.dg.continuous_to_discrete((pose_.x,pose_.y,pose_.z))
         #print ('local_pose set!!!')
         self.is_local_pose_updated = True
+
+    def uav_battery_callback(self, msg):
+        self.battery_persentage = msg.remaining
 
     def get_local_pose(self): # in mavros axis.for command.
         #print ('self.local_pose',self.local_pose)

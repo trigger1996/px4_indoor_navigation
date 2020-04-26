@@ -1,6 +1,6 @@
 
 navigator2_config = {
-    'is_use_bresenham' :              True,         # The Accuracy of VSLAM need to be improved, or this won't be of good use indoor
+    'is_use_bresenham' :              False,        # The Accuracy of VSLAM need to be improved, or this won't be of good use indoor
 
     'is_remove_collinear_pts' :       True,
 
@@ -13,5 +13,10 @@ navigator2_config = {
     # for debugging
     'disable_waiting_time' :          False,
 
-    'enable_publishing_test_map' :    True
+    'enable_publishing_test_map' :    True,
+
+    # for real quad
+    'enable_low_battery_landing' :    True,
+
+    'battery_min_threshold' :         0.2
 }
