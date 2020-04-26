@@ -8,6 +8,9 @@
         6 整理操作流程
         7 结题报告
 
+        注意一下，当前上传版本如果要用navigator2的话需要改下indoor_automatic内的roslaunch文件
+        Navigator.py改成navigator2.py即可
+
 
 #	使用大致流程
 
