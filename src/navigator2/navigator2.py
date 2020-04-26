@@ -62,6 +62,8 @@ import DiscreteGridUtils
 
 import numpy as np
 
+from navigator2_config  import navigator2_config as navigator2_config
+
 # define system status
 class status(Enum):
     INITIALIZED = 1
@@ -87,6 +89,9 @@ class Navigator:
         if config_file_path:
             pass
 
+        # Parameters for debugging
+        self.is_disable_waiting_time      = navigator2_config['disable_waiting_time']
+        self.is_enable_testmap_publishing = navigator2_config['enable_publishing_test_map']
 
         rospy.init_node("gi_navigator_node")
         self.dg = DiscreteGridUtils.DiscreteGridUtils(grid_size=0.2)#0.2)
@@ -120,14 +125,16 @@ class Navigator:
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
 
         # Parameters
-        self.is_use_bresenham = False           # 这个开了以后是用3D地图避障
-        self.is_remove_collinear_pts = True     # 这个开了以后会飞的更快，关了有更好的避障效果
-                                                # 避障可能会让飞机在某些地方“飞不动”
-        self.is_rotate_uav = True               # 飞行过程中机头指向目标，建议开启
+        self.is_use_bresenham = navigator2_config['is_use_bresenham']                   # 这个开了以后是用3D地图避障
+        self.is_remove_collinear_pts = navigator2_config['is_remove_collinear_pts']     # 这个开了以后会飞的更快，关了有更好的避障效果
+                                                                                        # 避障可能会让飞机在某些地方“飞不动”
+        self.is_rotate_uav = navigator2_config['is_rotate_uav']                         # 飞行过程中机头指向目标，建议开启
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
-        self.path_prune_2D = PathPruning_wScale(obstacle_distance=8, resolution=0.2)
+        self.path_prune_2D = PathPruning_wScale(obstacle_distance=navigator2_config['pathpruning_obstacle_dst'],
+                                                resolution=navigator2_config['pathpruning_resolution'])
+
         time.sleep(2)
 
 
@@ -142,8 +149,10 @@ class Navigator:
                 break
             time.sleep(1)
 
-        print("wait for initial mapping...")
-        time.sleep(10)
+        # wait a second for better initial mapping
+        if not self.is_disable_waiting_time:
+            print("wait for initial mapping...")
+            time.sleep(15)
 
         while self.mavros_state == "OFFBOARD" and not(rospy.is_shutdown()):
 
@@ -160,6 +169,17 @@ class Navigator:
 
             while current_pos != end_pos and not self.navi_task_terminated() and not(rospy.is_shutdown()):  # Till task is finished:
 
+                '''
+                    几个比较坑的问题
+                    1 地图提供的origin是地图(0, 0, 0)点对应实际坐标系的位置
+                    2 2D地图和3D地图的分辨率是不同的                    
+                    
+                    核心编程思想：
+                    1 这个函数内所有的量纲都是公制，在各个模块内换成栅格，输出的时候再换回公制
+                    2 打印一定要清晰                    
+                
+                '''
+
                 if not self.is_local_pose_updated:
                     time.sleep(1)
                     continue
@@ -172,24 +192,12 @@ class Navigator:
                 else:
                     self.is_obstacle_set_updated = False
 
-                # print ('Inside inner loop!')
-                #self.dg = DiscreteGridUtils.DiscreteGridUtils_wOffset(grid_size=self.occupancy_grid_raw.info.resolution)
-                #self.dg.update_offset([self.occupancy_grid_raw.info.origin.position.x,
-                #                       self.occupancy_grid_raw.info.origin.position.y,
-                #                       self.occupancy_grid_raw.info.origin.position.z])
-
-                #self.cur_target_position_raw = (self.local_pose_raw[0], self.local_pose_raw[1], self.local_pose_raw[2])
-                # 几个比较坑的问题
-                # 1 地图提供的origin是地图(0, 0, 0)点对应实际坐标系的位置
-                # 2 2D地图和3D地图的分辨率是不同的
                 current_pos = self.get_current_pose()       # in grids
-                current_pos_in_2Dmap = self.dg.continuous_to_discrete((self.local_pose_raw[0],
-                                                                       self.local_pose_raw[1],
-                                                                       1.4))                   # in_grids
                 end_pos = self.dg.continuous_to_discrete((self.cur_target_position_raw[0],
                                                           self.cur_target_position_raw[1],
                                                           self.cur_target_position_raw[2]))   # in_grids
 
+                # A* algorithm
                 self.algo = astar.astar_2d.A_star_2D(self.cur_target_position_raw,
                                                      vehicle_width=2, vehicle_length=2,
                                                      resolution=self.occupancy_grid_raw.info.resolution)
@@ -198,8 +206,9 @@ class Navigator:
                 self.algo.update_map(occupancy_map_resized)
 
                 # for debugging
-                data = self.algo.map_list_to_occupancy_grid()
-                self.occupancy_grid_pub.publish(data)
+                if self.is_enable_testmap_publishing:
+                    data = self.algo.map_list_to_occupancy_grid()
+                    self.occupancy_grid_pub.publish(data)
 
                 path = self.algo.find_path(self.local_pose_raw, self.cur_target_position_raw)
                 if path != None:
@@ -278,9 +287,6 @@ class Navigator:
                         next_pos = next_move
                         relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
                                         next_pos[2] - current_pos[2])
-                        #print ('next_move : ', next_move)
-                        #print ("relative_move : ", relative_pos)
-                        #print ("next_pose: ", next_pos)
 
                         self.current_pos = next_pos
 
@@ -318,9 +324,6 @@ class Navigator:
                     next_pos = next_move
                     relative_pos = (next_pos[0] - current_pos[0], next_pos[1] - current_pos[1],
                                     next_pos[2] - current_pos[2])
-                    #print ('next_move : ', next_move)
-                    #print ("relative_move : ", relative_pos)
-                    #print ("next_pose: ", next_pos)
 
                     # TODO
                     if not self.algo.is_valid(next_pos[0], next_pos[1], True):
@@ -439,7 +442,8 @@ class Navigator:
 
         # publishers
         #self.mavros_control_pub = rospy.Publisher('mavros/Command', Command, queue_size=10)
-        self.occupancy_grid_pub = rospy.Publisher('/map_test', OccupancyGrid, queue_size=10)
+        if self.is_enable_testmap_publishing:
+            self.occupancy_grid_pub = rospy.Publisher('/map_test', OccupancyGrid, queue_size=10)
 
         self.set_status(status.INITIALIZED)
 
@@ -510,8 +514,9 @@ class Navigator:
     def set_status(self, status):
         self.STATUS = String(status.name)
 
-
-
+    '''
+    TODO
+    '''
     def reachTargetPosition(self, target, threshold = 0.1):
 
         delta_x = math.fabs(self.local_pose.pose.position.x - target.pos_sp[0])
