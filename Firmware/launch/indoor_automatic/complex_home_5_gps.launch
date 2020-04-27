@@ -151,9 +151,13 @@
           type="navigator2.py"
           args=""
           output="screen">
-        <param name="target_x" type="double" value="1"  />
-        <param name="target_y" type="double" value="-15"   />
-        <param name="target_z" type="double" value="1.5" />
+        <param name="target_x"                              type="double" value="1"    />
+        <param name="target_y"                              type="double" value="-15"  />
+        <param name="target_z"                              type="double" value="1.5"  />
+        <param name="ualternative_navpt_min_radiusav_width" type="double" value="3.3"  />
+        <param name="uav_width"                             type="double" value="1.5"  />
+        <param name="uav_length"                            type="double" value="1.5"  />
+        <param name="is_rotate_uav"                         type="bool"   value="true" />
     </node>
 
     <!-- RVIZ -->

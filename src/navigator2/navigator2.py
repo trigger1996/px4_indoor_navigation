@@ -62,6 +62,7 @@ import DiscreteGridUtils
 
 import numpy as np
 
+from astar.astar_config import astar_config as astar_config
 from navigator2_config  import navigator2_config as navigator2_config
 
 # define system status
@@ -556,11 +557,57 @@ class Navigator:
 if __name__ == '__main__':
     nav = Navigator()
 
+
+    '''
+        Loading Parameters
+        这些变量可以在..._config.py内调，也可以在roslaunch内赋值，后者可以对不同环境用不同赋值，比较个性化
+    '''
     # in FLU meters
     target_x = rospy.get_param('~target_x', 30)     # 10, 0, 2.5, modified here for debugging
     target_y = rospy.get_param('~target_y', 6)
     target_z = rospy.get_param('~target_z', 1.5)
 
+    # A* Parameters
+    astar_config['z_move_cost']                  = rospy.get_param('~z_move_cost',                  astar_config['z_move_cost'])
+    astar_config['default_uav_altitude']         = rospy.get_param('~default_uav_altitude',         astar_config['default_uav_altitude'])
+    astar_config['alternative_navpt_min_radius'] = rospy.get_param('~alternative_navpt_min_radius', astar_config['alternative_navpt_min_radius'])
+    astar_config['uav_width']                    = rospy.get_param('~uav_width',                    astar_config['uav_width'])
+    astar_config['uav_length']                   = rospy.get_param('~uav_length',                   astar_config['uav_length'])
+
+    # Navigator Parameters
+    navigator2_config['is_use_bresenham'] = rospy.get_param('~is_use_bresenham',                     navigator2_config['is_use_bresenham'])
+    navigator2_config['is_remove_collinear_pts'] = rospy.get_param('~is_remove_collinear_pts',       navigator2_config['is_remove_collinear_pts'])
+    navigator2_config['is_rotate_uav'] = rospy.get_param('~is_rotate_uav',                           navigator2_config['is_rotate_uav'])
+    navigator2_config['pathpruning_obstacle_dst'] = rospy.get_param('~pathpruning_obstacle_dst',     navigator2_config['pathpruning_obstacle_dst'])
+    navigator2_config['pathpruning_resolution'] = rospy.get_param('~pathpruning_resolution',         navigator2_config['pathpruning_resolution'])
+    navigator2_config['disable_waiting_time'] = rospy.get_param('~disable_waiting_time',             navigator2_config['disable_waiting_time'])
+    navigator2_config['enable_publishing_test_map'] = rospy.get_param('~enable_publishing_test_map', navigator2_config['enable_publishing_test_map'])
+    navigator2_config['enable_low_battery_landing'] = rospy.get_param('~enable_low_battery_landing', navigator2_config['enable_low_battery_landing'])
+    navigator2_config['battery_min_threshold'] = rospy.get_param('~battery_min_threshold',           navigator2_config['battery_min_threshold'])
+
+    # param result
+    print("----- navigator2 started -----")
+
+    print("[navigator2] params: ", "A* z_move_cost",                  astar_config['z_move_cost'])
+    print("[navigator2] params: ", "A* default_uav_altitude",         astar_config['default_uav_altitude'])
+    print("[navigator2] params: ", "A* alternative_navpt_min_radius", astar_config['alternative_navpt_min_radius'])
+    print("[navigator2] params: ", "A* uav_width",                    astar_config['uav_width'])
+    print("[navigator2] params: ", "A* uav_length",                   astar_config['uav_length'])
+
+    print("[navigator2] params: ", "is_use_bresenham",           navigator2_config['is_use_bresenham'])
+    print("[navigator2] params: ", "is_remove_collinear_pts",    navigator2_config['is_remove_collinear_pts'])
+    print("[navigator2] params: ", "is_rotate_uav",              navigator2_config['is_rotate_uav'])
+    print("[navigator2] params: ", "pathpruning_obstacle_dst",   navigator2_config['pathpruning_obstacle_dst'])
+    print("[navigator2] params: ", "pathpruning_resolution",     navigator2_config['pathpruning_resolution'])
+    print("[navigator2] params: ", "disable_waiting_time",       navigator2_config['disable_waiting_time'])
+    print("[navigator2] params: ", "enable_publishing_test_map", navigator2_config['enable_publishing_test_map'])
+    print("[navigator2] params: ", "enable_low_battery_landing", navigator2_config['enable_low_battery_landing'])
+    print("[navigator2] params: ", "battery_min_threshold",      navigator2_config['battery_min_threshold'])
+
+
+    '''
+        Function    
+    '''
     print("[Px4 indoor] target position: ", [target_x, target_y, target_z])
 
     #FLU meters.
