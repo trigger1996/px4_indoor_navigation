@@ -65,6 +65,6 @@ astar_config={
     'z_move_cost': 35,
     'default_uav_altitude' : 1.55,              # in meters
     'alternative_navpt_min_radius' : 2.5,       # in meters
-    'uav_width'  : 1.5,                         # in meters
-    'uav_length' : 1.5                          # in meters
+    'uav_width'  : 1.3,                         # in meters
+    'uav_length' : 1.3                          # in meters
 }

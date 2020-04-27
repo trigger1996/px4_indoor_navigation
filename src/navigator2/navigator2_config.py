@@ -4,7 +4,7 @@ navigator2_config = {
 
     'is_remove_collinear_pts' :       True,
 
-    'is_rotate_uav' :                 True,
+    'is_rotate_uav' :                 False,
 
     'pathpruning_obstacle_dst' :      4,            # in grids
 

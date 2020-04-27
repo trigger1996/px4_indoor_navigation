@@ -255,7 +255,7 @@ class Navigator:
                         #    self.do_hover()  # TODO
                         #    break
 
-            last_pos = current_pose
+            last_pos = self.get_current_pose()
             time.sleep(0.05) # wait for new nav task.
             '''
             if self.found_path:

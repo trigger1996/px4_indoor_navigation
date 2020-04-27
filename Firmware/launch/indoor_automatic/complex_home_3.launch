@@ -146,6 +146,15 @@
         <param name="target_y" type="double" value="1"   />
         <param name="target_z" type="double" value="1.6" />
     </node>
+    <!--node name="navigator"
+          pkg="px4_indoor"
+          type="navigator2.py"
+          args=""
+          output="screen">
+        <param name="target_x" type="double" value="14"  />
+        <param name="target_y" type="double" value="1"   />
+        <param name="target_z" type="double" value="1.6" />
+    </node-->
 
     <!-- RVIZ -->
     <node name="rviz" pkg="rviz" type="rviz" required="true"

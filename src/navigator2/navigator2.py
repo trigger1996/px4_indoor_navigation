@@ -28,11 +28,11 @@ import rospy
 from geometry_msgs.msg import PoseStamped, Twist
 from std_msgs.msg import Float32, String
 from nav_msgs.msg import OccupancyGrid
-from sensor_msgs.msg import Imu, NavSatFix, PointCloud, PointCloud2
+from sensor_msgs.msg import Imu, NavSatFix, PointCloud, PointCloud2, BatteryState
 import sensor_msgs.point_cloud2 as pc2
 from visualization_msgs.msg import Marker,MarkerArray
 # for mavros
-from mavros_msgs.msg import GlobalPositionTarget, State, PositionTarget, BatteryStatus #, Command
+from mavros_msgs.msg import GlobalPositionTarget, State, PositionTarget#, Command
 from mavros_msgs.srv import CommandBool, SetMode
 
 
@@ -451,7 +451,7 @@ class Navigator:
         self.octomap_cells_vis = rospy.Subscriber("/octomap_point_cloud_centers", PointCloud2, self.octomap_update_callback)
         self.local_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.local_pose_callback)
         self.mavros_sub = rospy.Subscriber("/mavros/state", State, self.mavros_state_callback)
-        self.mavros_sub = rospy.Subscriber("/mavros/battery", BatteryStatus, self.uav_battery_callback)
+        self.mavros_sub = rospy.Subscriber("/mavros/battery", BatteryState, self.uav_battery_callback)
 
 
         # publishers
@@ -514,7 +514,7 @@ class Navigator:
         self.is_local_pose_updated = True
 
     def uav_battery_callback(self, msg):
-        self.battery_persentage = msg.remaining
+        self.battery_persentage = msg.percentage
 
     def get_local_pose(self): # in mavros axis.for command.
         #print ('self.local_pose',self.local_pose)

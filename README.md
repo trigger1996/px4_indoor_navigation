@@ -1,6 +1,6 @@
 #	使用大致流程
 
-##	0   git基本操作
+###	0   git基本操作
             git clone https://github.com/trigger1996/px4_indoor_navigator px4_indoor
             cd px4_indoor
             git submodule update --init --recursive
@@ -16,11 +16,11 @@
             cd ~/catkin_ws_ros
             catkin_make -j4 -l4
 
-##	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
+###	1 完成到GAAS教程3，注意PCL版本：1.8.1，protobuf最好别装，要装的话版本3.0.0
 		https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen
-##	2 安装cartographer_ros，版本1.0.0
+###	2 安装cartographer_ros，版本1.0.0
 		https://google-cartographer-ros.readthedocs.io/en/latest/compilation.html
-##	3 复制Firmware覆盖原始Firmware
+###	3 复制Firmware覆盖原始Firmware
 
 #	启动方式
 
@@ -116,13 +116,13 @@
 
                 随便选一个roslaunch开就好了
                 几个注意点
-##              1 关于GPS，有些地图很难，所以GPS是开的
+###             1 关于GPS，有些地图很难，所以GPS是开的
                     如果要做测试，可以把里面iris_stereo_rplidar改成iris_stereo_rplidar_no_gps即可
 
                     顺带提一下使用功能SLAM的影响，因为激光更新频率不高，再加上ROS内部有延迟和我是拿轻薄本跑整个系统
                     所以延迟优点能感觉到，比靠GPS慢很多
 
-##              2 关于navigator和navigator2
+###             2 关于navigator和navigator2
                     navigator是GAAS组的成果，笔者只是稍微调了下里面的代码，但是发现基本思路很好根本没啥地方能改
                     它的核心思路：只有确定有障碍的地方是不能过的
                                 地图中unknown和free都可以走
@@ -148,7 +148,7 @@
 
                     两个算法都可以测试，只要在roslaunch里注释/取消注释即可
 
-##               使用的室内环境
+###              使用的室内环境
                         自己画的几个
                         simple_environment
                             简单的方框环境，用来测试slam效果的
@@ -156,11 +156,18 @@
                         complex_home_5
                             难点在于终点在起点的反方向，飞机要转一圈
 
+                            参数：
+                                A*: 飞机体积x: 1.2 y: 1.2
+
                         complex_home_4
                             难点在于过一个有s弯的地方
                             而且有窗户，飞机钻出窗户就失败了
                             navigator测了很多次过不去
                             navigator2有gps可以到达终点，而且比较稳定，但是真机飞类似环境一定要上防撞圈，因为是一直靠撞击过去的
+
+                            参数：
+                                A*: 飞机体积x: 1.5 y: 1.5
+                                防撞，不改也行
 
                         complex_home_3
                             室内环境无门窗，现在确定navigator已经可以飞了
