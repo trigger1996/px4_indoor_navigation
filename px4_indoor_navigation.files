@@ -1,5 +1,6 @@
 .gitignore
 .gitmodules
+src/debug/trajectory_recorder_main.cpp
 src/ygz_slam_ros/CMakeLists.txt
 src/ygz_slam_ros/util/src/Viewer.cpp
 src/ygz_slam_ros/util/src/EurocReader.cpp

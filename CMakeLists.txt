@@ -147,6 +147,10 @@ add_executable(${PROJECT_NAME}_topic_relay
     src/topic_relay/topic_relay_main.cpp
 )
 
+add_executable(${PROJECT_NAME}_trajectory_recorder
+    src/debug/trajectory_recorder_main.cpp
+)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -163,6 +167,10 @@ target_link_libraries(${PROJECT_NAME}_key_control
 )
 
 target_link_libraries(${PROJECT_NAME}_topic_relay
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(${PROJECT_NAME}_trajectory_recorder
     ${catkin_LIBRARIES}
 )
 

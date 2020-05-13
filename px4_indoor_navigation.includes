@@ -47,3 +47,4 @@ src/ygz_slam_ros/system/include
 src/ygz_slam_ros/serialization/include
 src/ygz_slam_ros/util/include
 .
+src/debug
