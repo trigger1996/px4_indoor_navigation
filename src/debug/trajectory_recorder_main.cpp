@@ -50,9 +50,17 @@ int main(int argc, char *argv[]) {
             pose.pose.position    = slam_pose.pose.position;
             pose.pose.orientation = slam_pose.pose.orientation;
 
-            slam_path_to_pub.header.stamp = ros::Time::now();
-            slam_path_to_pub.poses.push_back(pose);
-            slam_pos_pub.publish(slam_path_to_pub);
+            if (!(isnan(pose.pose.position.x) || isnan(pose.pose.position.y) || isnan(pose.pose.position.z)) &&
+                !(isnan(pose.pose.orientation.x) || isnan(pose.pose.orientation.y) ||
+                  isnan(pose.pose.orientation.z) || isnan(pose.pose.orientation.w)) &&
+                !(isinf(pose.pose.position.x) || isinf(pose.pose.position.y) || isinf(pose.pose.position.z)) &&
+                !(isinf(pose.pose.orientation.x) || isinf(pose.pose.orientation.y) ||
+                  isinf(pose.pose.orientation.z) || isinf(pose.pose.orientation.w)) ) {
+
+                slam_path_to_pub.header.stamp = ros::Time::now();
+                slam_path_to_pub.poses.push_back(pose);
+                slam_pos_pub.publish(slam_path_to_pub);
+            }
 
             is_slam_pose_updated = false;
         }

@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- MAVROS posix SITL environment launch script -->
+    <!-- launches MAVROS, PX4 SITL, Gazebo environment, and spawns vehicle -->
+    <!-- vehicle pose -->
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="R" default="0"/>
+    <arg name="P" default="0"/>
+    <arg name="Y" default="0"/>
+    <!-- vehicle model and world -->
+    <arg name="est" default="ekf2"/>
+    <arg name="vehicle" default="iris_stereo_rplidar_no_gps"/>
+    <arg name="world" default="$(find mavlink_sitl_gazebo)/worlds/complex_home_5_easy.world"/>
+    <arg name="sdf" default="$(find mavlink_sitl_gazebo)/models/$(arg vehicle)/$(arg vehicle).sdf"/>
+    <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
+    <!-- gazebo configs -->
+    <arg name="gui" default="true"/>
+    <arg name="debug" default="false"/>
+    <arg name="verbose" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="respawn_gazebo" default="false"/>
+    <!-- MAVROS configs -->
+    <arg name="fcu_url" default="udp://:14540@localhost:14557"/>
+    <arg name="respawn_mavros" default="false"/>
+    <!-- PX4 configs -->
+    <arg name="interactive" default="true"/>
+    <!-- PX4 SITL and Gazebo -->
+    <include file="$(find px4)/launch/posix_sitl.launch">
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="R" value="$(arg R)"/>
+        <arg name="P" value="$(arg P)"/>
+        <arg name="Y" value="$(arg Y)"/>
+        <arg name="world" value="$(arg world)"/>
+        <arg name="vehicle" value="$(arg vehicle)"/>
+        <arg name="sdf" value="$(arg sdf)"/>
+        <arg name="rcS" value="$(arg rcS)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="interactive" value="$(arg interactive)"/>
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="verbose" value="$(arg verbose)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="respawn_gazebo" value="$(arg respawn_gazebo)"/>
+    </include>
+    <!-- MAVROS -->
+    <include file="$(find mavros)/launch/px4.launch">
+        <!-- GCS link is provided by SITL -->
+        <arg name="gcs_url" value=""/>
+        <arg name="fcu_url" value="$(arg fcu_url)"/>
+        <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+    </include>
+
+    <!-- Message Relay -->
+    <node name="px4_indoor_topic_relay"
+          pkg="px4_indoor"
+          type="px4_indoor_topic_relay"
+          args=""
+          output="screen">
+          <param name="is_use_vslam_data" type="int"    value="0"    />  
+          <param name="data_fusion_K_xy"  type="double" value="0.75" />
+          <param name="data_fusion_K_z"   type="double" value="0.6"  />
+    </node>
+
+    <!-- Cartographer SLAM -->
+    <param name="/use_sim_time" value="false" />
+    <node name="cartographer_node"
+          pkg="cartographer_ros"
+          type="cartographer_node"
+          args="-configuration_directory $(find px4)/launch/indoor_automatic/configs -configuration_basename rplidar_gazebo.lua"
+          output="screen">
+    </node>
+    <node name="cartographer_occupancy_grid_node"
+          pkg="cartographer_ros"
+          type="cartographer_occupancy_grid_node" />
+    <node name="robot_pose_publisher"
+          pkg="robot_pose_publisher"
+          type="robot_pose_publisher"
+          respawn="false"
+          output="screen" >
+          <!--remap from="/robot_pose" to="/mavros/vision_pose/pose" /-->
+    </node>
+
+    <!-- VSLAM -->
+    <node name="VSLAM_ros"
+          pkg="px4_indoor"
+          type="VSLAM_ros"
+          args="$(find px4_indoor)/src/ygz_slam_ros/examples/simulationCamera.yaml ~/catkin_ws/logs/vslam.log"
+          output="screen">
+	  <param name="is_logging_info" type="int" value="0" />  
+    </node>
+
+    <!-- TF -->
+    <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
+
+    <!--Point Cloud Reconstruction-->
+    <arg  name="config_file_path" value="$(find px4_indoor)/src/visual_obstacle_map/config.yaml"/>
+    <node name="dense_reconstruction"
+          pkg="px4_indoor"
+          type="dense_reconstruction"
+          args="$(arg config_file_path)"
+          output="screen">
+          <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
+          <param name="is_display_publishing_index" type="int" value="0" />
+    </node>
+    <!-- Point Cloud Insertion, one should be chosen between these two -->
+    <!--node name="match_pointcloud_and_slam_pose"
+          pkg="px4_indoor"
+          type="match_pointcloud_and_slam_pose"
+          args=""
+          output="screen">
+	  <param name="is_display_pose" type="int" value="0" />
+    </node-->
+    <node name="match_pointcloud_and_slam_pose2"
+          pkg="px4_indoor"
+          type="match_pointcloud_and_slam_pose2"
+          args=""
+          output="screen">
+	  <param name="is_display_pose"    type="int" value="0" />
+          <param name="is_integrate_laser" type="int" value="1" />
+	  <param name="src_prefix"       value="$(find px4_indoor)/src/visual_obstacle_map/" />
+    </node>
+
+    <!-- Octomap -->
+    <include file="$(find px4)/launch/indoor_automatic/configs/octomap_mapping.launch">
+    </include>
+
+    <!-- MAVROS Offboard -->
+    <node name="px4_mavros_run"
+          pkg="px4_indoor"
+          type="px4_mavros_run.py"
+          args=""
+          output="screen">
+    </node>
+
+    <!-- Path Planning -->
+    <!-- Target_Frame: FLU -->
+    <!--node name="navigator"
+          pkg="px4_indoor"
+          type="Navigator.py"
+          args=""
+          output="screen">
+        <param name="target_x" type="double" value="1.5" />
+        <param name="target_y" type="double" value="-15" />
+        <param name="target_z" type="double" value="1.4" />
+    </node-->
+    <node name="navigator"
+          pkg="px4_indoor"
+          type="navigator2.py"
+          args=""
+          output="screen">
+        <param name="target_x"                      type="double" value="1.5"   />
+        <param name="target_y"                      type="double" value="-10"   />
+        <param name="target_z"                      type="double" value="1.4"   />
+        <param name="alternative_navpt_min_radius"  type="double" value="4.5"   />
+        <param name="uav_width"                     type="double" value="1.4"   />
+        <param name="uav_length"                    type="double" value="1.4"   />
+        <param name="is_rotate_uav"                 type="bool"   value="false" />
+        <param name="is_remove_collinear_pts"       type="bool"   value="true"  />
+
+    </node>
+
+    <!-- Trajectory Recorder -->
+    <node name="px4_indoor_trajectory_recorder" pkg="px4_indoor" type="px4_indoor_trajectory_recorder" required="false"
+          args="" >
+    </node>
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+          args="-d $(find px4)/launch/indoor_automatic/configs/rplidar_trajectory.rviz" >
+    </node>
+
+</launch>

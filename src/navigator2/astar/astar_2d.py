@@ -60,7 +60,7 @@ class A_star_2D(object):
 
 
     def reconstruct_path(self, came_from, current):
-        path = [current]
+        path = [(current[0], current[1], DEFAULT_UAV_ALT / self.resolution)]
         while current in came_from:
             current = came_from[current]
             path.append((current[0], current[1], DEFAULT_UAV_ALT / self.resolution))
@@ -92,7 +92,15 @@ class A_star_2D(object):
             current = heappop(self.openSet)[1]  # 从堆中弹出fscore最小的节点
 
             if current == goal:
-                return self.reconstruct_path(self.came_from, current)
+                path_in_grid = self.reconstruct_path(self.came_from, current)
+                # 找到目标后要把目标从grid变成实际值
+                path = []
+                for nav_pt_in_grid in path_in_grid:
+                    nav_pt = self.dg.discrete_to_continuous_target(
+                        (nav_pt_in_grid[0], nav_pt_in_grid[1], DEFAULT_UAV_ALT / self.resolution))
+                    path.append(nav_pt)
+                # print("path", path)
+                return path
 
             self.close_set.add(current)
 

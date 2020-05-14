@@ -314,7 +314,7 @@ class Navigator:
                         if self.is_rotate_uav:
                             target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
                         else:
-                            target_yaw = None
+                            target_yaw = 0      # alternative: None
 
                         # move vehicle
                         print ('mav_move() input: relative pos=',next_pos)
@@ -354,7 +354,7 @@ class Navigator:
                     if self.is_rotate_uav:
                         target_yaw = atan2_yaw(relative_pos[1], relative_pos[0]) * 180. / math.pi
                     else:
-                        target_yaw = None
+                        target_yaw = 0      # alternative: None
 
                     # move vehicle
                     print ('mav_move() input: relative pos=',next_pos)
@@ -563,8 +563,8 @@ if __name__ == '__main__':
         这些变量可以在..._config.py内调，也可以在roslaunch内赋值，后者可以对不同环境用不同赋值，比较个性化
     '''
     # in FLU meters
-    target_x = rospy.get_param('~target_x', 30)     # 10, 0, 2.5, modified here for debugging
-    target_y = rospy.get_param('~target_y', 6)
+    target_x = rospy.get_param('~target_x', 10)     # 10, 0, 1.5, modified here for debugging
+    target_y = rospy.get_param('~target_y', 0)
     target_z = rospy.get_param('~target_z', 1.5)
 
     # A* Parameters
