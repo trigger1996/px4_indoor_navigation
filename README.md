@@ -370,6 +370,13 @@
         对这种室内很好用，这里没加进来
         可以去QGC里面变量栏搜个ALT或者HEIGHT之类的找找
 
+## 2020.5.29 
+	git submodule update --init --recursive
+		fatal: No url found for submodule path 'GAAS/algorithms/sfm/OpenSfM/opensfm/src/third_party/pybind11' in .gitmodules
+		Failed to recurse into submodule path 'GAAS'
+	seems harmless because the other modules are set outside submodules
+
+
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
 
