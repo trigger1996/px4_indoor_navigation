@@ -383,7 +383,8 @@
         5 光流的依赖包在18.04.2上有点问题，重新搞了，就是Flow改成了flow
         （自己看Firmware/Tool/sitl_gazebo/model里的文件），如果仿真有问题记得改回来
         6 sudo apt install libpopt-dev
-
+        7 这次安装很多东西都是硬盘里面拷出来，导致roslaunch的时候比如navigator.py px4_mavros_run.py这些都会出问题（多个文件重复）
+            办法没有好的，是对GAAS文件夹内的同名文件： chmod -x <文件名或者文件路径>，取消它们的执行权限
         现在飞机是可以在NUC上仿真的了，等于整套东西都跑通了
 
 
