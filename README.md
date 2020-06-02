@@ -370,6 +370,24 @@
         对这种室内很好用，这里没加进来
         可以去QGC里面变量栏搜个ALT或者HEIGHT之类的找找
 
+# 2020.6.2
+        1 ubuntu 18.04.4在NUC上无法自动登录
+        2 学校网络装不了OPENCV：主要是raw.githubusercontent.com被DNS污染了
+            解决方案：用安好的复制（或者参考3）
+        3 https://www.cnblogs.com/sinferwu/p/12726833.html
+        4 Px4编译Gazebo使用的protobuf和编译ros使用的protobuf的版本是不同的
+            所以最好的办法就是，先编译Cartographer，然后删掉/usr/local/下的protobuf，然后再编译飞控
+            还有个办法 Firmware/Tools/sitl_gazebo/CMakeLists.txt 16 行
+                set(PROTOBUF_IMPORT_DIRS "")改成   
+                set(PROTOBUF_IMPORT_DIRS "/usr")
+        5 光流的依赖包在18.04.2上有点问题，重新搞了，就是Flow改成了flow
+        （自己看Firmware/Tool/sitl_gazebo/model里的文件），如果仿真有问题记得改回来
+        6 sudo apt install libpopt-dev
+
+        现在飞机是可以在NUC上仿真的了，等于整套东西都跑通了
+
+
+
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 
 
