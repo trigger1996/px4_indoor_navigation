@@ -48,3 +48,4 @@ src/ygz_slam_ros/serialization/include
 src/ygz_slam_ros/util/include
 .
 src/debug
+src/driver

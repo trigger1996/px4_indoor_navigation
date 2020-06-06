@@ -387,7 +387,17 @@
             办法没有好的，是对GAAS文件夹内的同名文件： chmod -x <文件名或者文件路径>，取消它们的执行权限
         现在飞机是可以在NUC上仿真的了，等于整套东西都跑通了
 
+        8 编译内存不够
+            doc.okbase.net/maczhao/archive/122983.html
+            https://blog.csdn.net/taiyang1987912/article/details/41695895/
 
+            mkdir /opt/images/
+            dd if=/dev/zero of=/opt/images/swap bs=1024 count=4096000
+            mkswap /opt/images/swap
+            swapon /opt/images/swap
+
+            echo "/opt/images/swap  swap  swap  sw  0  0"  >> / etc / fstab
+            最后一个可以手动添加
 
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 

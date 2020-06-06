@@ -174,6 +174,9 @@ target_link_libraries(${PROJECT_NAME}_trajectory_recorder
     ${catkin_LIBRARIES}
 )
 
+# Drivers
+include(src/driver/CMakeLists.txt)
+
 # Octomapping Pack
 include(src/visual_obstacle_map/CMakeLists.txt)
 
