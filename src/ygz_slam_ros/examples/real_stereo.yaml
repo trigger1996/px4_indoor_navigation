@@ -1,0 +1,159 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+
+# camera and imu topics
+Left: /gi/simulation/left/image_raw 
+        # /multisense_sl/camera/left/image_raw
+Right: /gi/simulation/right/image_raw 
+        # /multisense_sl/camera/right/image_raw
+
+# not used for now
+#Imu: /mavros/imu/data
+
+# Camera calibration and distortion parameters (OpenCV) 
+# if running in pure stereo vision mode
+PureVisionMode: true
+
+# do we need visualization?
+UseViewer: true
+
+# display mappoints?
+displayMapPoints: false
+
+Camera.fx: 740.0455
+Camera.fy: 740.8896
+Camera.cx: 584.9662
+Camera.cy: 452.1258
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+Camera.width: 752
+Camera.height: 480
+
+# Camera frames per second 
+Camera.fps: 30.0
+
+# stereo baseline times fx
+#Camera.bf: 47.90639384423901
+#Camera.bf: 4.790639384423901
+Camera.bf: 39.9554
+#Camera.bf: 4.307659898571635
+#Camera.bf: 0.399554
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+# Close/Far threshold. Baseline times.
+ThDepth: 35
+
+# Vocabulary path
+VocPath: voc/brief_k10L6.bin
+
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+# Camera.fx, .fy, etc must be the same as in LEFT.P
+#--------------------------------------------------------------------------------------------
+LEFT.height: 1280
+LEFT.width: 960
+LEFT.D: !!opencv-matrix
+   rows: 1
+   cols: 14
+   dt: d
+   data: [ 1.1703559610693559e-01, -1.9503300293794040e-01, 0., 0., 0.,
+       0., 0., -1.1590358566222192e-01, 0., 0., 0., 0., 0., 0. ]
+LEFT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 7.1301439063456439e+02, 0., 5.8387857630581857e+02, 0.,
+       7.1416257715873451e+02, 4.5219819869616020e+02, 0., 0., 1. ]
+LEFT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 9.9960753927352997e-01, -4.0208049838716771e-03,
+       2.7723646131056823e-02, 4.2369387674287646e-03,
+       9.9996105662923496e-01, -7.7416777784238486e-03,
+       -2.7691438702231570e-02, 7.8561028650059751e-03,
+       9.9958564709102093e-01 ]
+LEFT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [ 6.3975356833395801e+02, 0., 6.5985239028930664e+02, 0., 0.,
+       6.3975356833395801e+02, 4.7516954994201660e+02, 0., 0., 0., 1.,
+       0. ]
+
+RIGHT.height: 1280
+RIGHT.width: 960
+RIGHT.D: !!opencv-matrix
+   rows: 1
+   cols: 14
+   dt: d
+   data: [ 1.3929252183149354e-01, -3.1711336739362489e-01, 0., 0., 0.,
+       0., 0., -2.8671765424767426e-01, 0., 0., 0., 0., 0., 0. ]
+RIGHT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 7.1301439063456439e+02, 0., 5.8703446127168991e+02, 0.,
+       7.1416257715873451e+02, 4.5982958268109513e+02, 0., 0., 1. ]
+RIGHT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 9.9984887231361796e-01, 9.7287782579374722e-03,
+       -1.4407755092103092e-02, -9.6717899790707221e-03,
+       9.9994514733586415e-01, 4.0198007484831049e-03,
+       1.4446072538475161e-02, -3.8798444639755502e-03,
+       9.9988812263930216e-01 ]
+RIGHT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [ 6.3975356833395801e+02, 0., 6.5985239028930664e+02,
+       -3.8633682397264973e+04, 0., 6.3975356833395801e+02,
+       4.7516954994201660e+02, 0., 0., 0., 1., 0. ]
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1200
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast			
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500
+
+
