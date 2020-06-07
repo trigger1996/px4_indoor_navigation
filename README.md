@@ -410,6 +410,9 @@
             这个是真机的
             gazebo的类似
 
+            这里的rviz配置文件没写好，不知道怎么搞，位置一直不会显示
+            所以还算用viewer和rostopic echo /mavros/vision_pose/vision看吧
+
 
 ###     3 写好激光雷达的驱动（roslaunch）,配合google cartographer测试
             cd ~/catkin_ws_ros/src/
