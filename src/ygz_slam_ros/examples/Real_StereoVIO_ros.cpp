@@ -488,12 +488,14 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
         cout<<"Do not use gps."<<endl;
         if(atti_list.size()>0)
         {
-            LOG(WARNING)<<"Adding atti into stereo frame"<<endl;
+            if (is_logging_warning)
+                LOG(WARNING)<<"Adding atti into stereo frame"<<endl;
             pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,atti_list.back(),true,height_in,use_height);
         }
         else
         {
-            LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
+            if (is_logging_warning)
+                LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
             pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,VehicleAttitude(),false,height_in,use_height);
         }
     }
@@ -579,6 +581,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
 
     geometry_msgs::PoseStamped EstimatedPose;
     EstimatedPose.header.stamp = ros::Time::now();
+    EstimatedPose.header.frame_id = "base_link";        // "vision"
 
     //ENU  +z +y
     //     | /
@@ -689,9 +692,9 @@ int main(int argc, char **argv) {
     }
 
 
-    ros::init(argc, argv, "ygz_with_gps");
+    ros::init(argc, argv, "Real_VSLAM_ros");
     ros::NodeHandle nh;
-    ros::NodeHandle private_nh("VSLAM_ros");
+    ros::NodeHandle private_nh("Real_VSLAM_ros");
 
     private_nh.getParam("is_logging_info", is_logging_info);
     private_nh.getParam("is_logging_warning", is_logging_warning);

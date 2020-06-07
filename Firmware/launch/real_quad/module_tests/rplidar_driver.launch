@@ -2,7 +2,6 @@
 <launch>
     <!-- Rplidar Driver -->
     <include file="$(find rplidar_ros)/launch/rplidar.launch">
-
     </include>
 
     <!-- RVIZ -->

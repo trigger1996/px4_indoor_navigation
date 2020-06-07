@@ -128,8 +128,9 @@ namespace ygz {
 
 
             // TODO 检查这个图像能否初始化双目
-            if (StereoInitialization() == false) {               
-                LOG(INFO) << "Stereo init failed." << endl;
+            if (StereoInitialization() == false) {
+                if (is_logging_info)
+                    LOG(INFO) << "Stereo init failed." << endl;
                 return;
             }
 
@@ -529,7 +530,8 @@ namespace ygz {
         }
         
         if (cntValidFeat < setting::minValidInitFeatures) {
-            LOG(INFO) << "Valid feature is not enough! current:" << cntValidFeat<<";min valid num:"<<setting::minValidInitFeatures << endl;
+            if (is_logging_info)
+                LOG(INFO) << "Valid feature is not enough! current:" << cntValidFeat<<";min valid num:"<<setting::minValidInitFeatures << endl;
             return false;
         }
 	
@@ -1040,7 +1042,8 @@ namespace ygz {
       if(this->mUseGPS)
       {
         cout << "adding edgeGPS to Optimization."<<endl;
-        LOG(WARNING) << "adding edgeGPS to Optimization 1."<< endl;
+        if (is_logging_warning)
+            LOG(WARNING) << "adding edgeGPS to Optimization 1."<< endl;
         double x=this->mGPSx;
         double y=this->mGPSy;
         double z = this->mGPSz;
@@ -1050,7 +1053,8 @@ namespace ygz {
         Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
         ePRGPS->setInformation( info_mat*100.0);
         optimizer.addEdge(ePRGPS);
-        LOG(WARNING) << "adding edgeGPS to Optimization 2."<< endl;
+        if (is_logging_warning)
+            LOG(WARNING) << "adding edgeGPS to Optimization 2."<< endl;
       }
 	}
 		
@@ -1192,7 +1196,8 @@ namespace ygz {
         // Recover optimized pose and return number of inliers
         int inliers = nInitialCorrespondences - nBad;
         if (inliers < setting::minPoseOptimizationInliers) {
-            LOG(WARNING) << "inliers is small, pose may by unreliable: " << inliers << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "inliers is small, pose may by unreliable: " << inliers << endl;
         }
 
         // 这时候当前帧的P+R应该是对的，固定之，然后修正V, BG, BA
@@ -1433,7 +1438,8 @@ namespace ygz {
         int inliers = nInitialCorrespondences - nBad;
         //LOG(INFO) << "bad/total = " << nBad << "/" << nInitialCorrespondences << endl;
         if (inliers < setting::minPoseOptimizationInliers) {
-            LOG(WARNING) << "inliers is small, pose may by unreliable: " << inliers << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "inliers is small, pose may by unreliable: " << inliers << endl;
         } else {
             // recover current pose
             mpCurrentFrame->SetPose(SE3d(vPR->R(), vPR->t()));
@@ -1693,9 +1699,10 @@ namespace ygz {
 	    if(frame_to_be_build_count_cache>30)
 	    {
 	        frame_to_build_count_mutex.lock();
-		frame_to_build_count = 0;
-		frame_to_build_count_mutex.unlock();
-	        LOG(WARNING)<<"Frame to build count >100,Building map!"<<endl;
+            frame_to_build_count = 0;
+            frame_to_build_count_mutex.unlock();
+            if (is_logging_warning)
+                LOG(WARNING)<<"Frame to build count >100,Building map!"<<endl;
 		for(int index=total_frame_count-frame_to_be_build_count_cache;index<total_frame_count;index++)
 		//for( const auto& id_lightframe_pair : this->id_to_frame_map )
 		{
@@ -1724,7 +1731,8 @@ namespace ygz {
             pObstacle_tree->updateNode(octomap::point3d(p.x,p.y,p.z),true);
 		    }
 		}
-		LOG(WARNING)<<"Saving cloud!"<<endl;
+        if (is_logging_warning)
+            LOG(WARNING)<<"Saving cloud!"<<endl;
 		cloud.height = 1;
                 cloud.width = cloud.points.size();
                 cout<<"point cloud size = "<<cloud.points.size()<<endl;
@@ -1737,7 +1745,8 @@ namespace ygz {
 		map_msg.header.frame_id="/map";
 		octomap_msgs::binaryMapToMsg<octomap::OcTree>(*pObstacle_tree,map_msg);
 		obsmap_pub.publish(map_msg);
-		LOG(WARNING)<<"map msg published!!"<<endl;
+        if (is_logging_warning)
+            LOG(WARNING)<<"map msg published!!"<<endl;
 		stringstream ss;
 		ss<<"output_octree_"<<save_obs_map_index<<".bt";
 		std::string filename;
@@ -1746,11 +1755,13 @@ namespace ygz {
 		save_obs_map_index++;
 		if(save_status)
 		{
-		    LOG(WARNING)<<"Octree Saved!!"<<endl;
+            if (is_logging_warning)
+                LOG(WARNING)<<"Octree Saved!!"<<endl;
 		}
 		else
 		{
-		    LOG(WARNING)<<"Octree Save failed!!"<<endl;
+            if (is_logging_warning)
+                LOG(WARNING)<<"Octree Save failed!!"<<endl;
 		}
 		//return;//TODO : drop this.test only!
 	    }

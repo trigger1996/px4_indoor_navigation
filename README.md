@@ -198,7 +198,7 @@
 
         3 下下来以后最好工程文件夹改名，从px4_indoor_navigation改成px4_indoor，不然得进文件一个个改
 
-#	几个参考
+#	几个参考https://blog.csdn.net/w383117613/article/details/44216653
 	为什么在ubuntu 18.04.2上编译会失败
 		估计是模型没有编译通过
 		模型通过gazebo和mavros交互，所以模型没过自然会造成系统爆炸
@@ -404,10 +404,11 @@
 ###     1 写好Stereo的驱动（OpenCV）和测试用的roslaunch文件
 
 ###     2 Stereo和VSLAM配合测试
-            TODO
-                1 关掉console的显示
-                2 关掉窗口的显示
-                3 在RVIZ中显示
+            注意一下，viewer可以在src/ygz_slam_ros/example/real_stereo.yaml里有个
+                UseViewer
+            可以关
+            这个是真机的
+            gazebo的类似
 
 
 ###     3 写好激光雷达的驱动（roslaunch）,配合google cartographer测试
@@ -418,7 +419,19 @@
             然后开始写这个
 
             rplidar走的是USB，所以
-            每次插拔或者开机都要sudo chmod /dev/ttyUSB0
+            每次插拔或者开机都要sudo chmod 777 /dev/ttyUSB0
+                https://blog.csdn.net/w383117613/article/details/44216653
+
+            sudo chmod 777 /dev/ttyUSB0
+            sudo usermod -aG　dialout <自己的用户名>
+
+###     4 写好IMU的驱动
+            想好到底要不要外挂IMU
+            还算就是飞控的IMU就行（没有欧拉角）
+
+            现在主要问题是USB接口不够
+            过段等器件到了，完成重载测试确定飞机载荷后，再决定到底用不用外挂IMU
+
 
 
 

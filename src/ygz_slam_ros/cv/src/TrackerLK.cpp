@@ -14,7 +14,8 @@
 namespace ygz {
 
     TrackerLK::TrackerLK(const string &settingFile) {
-        LOG(WARNING)<<"Init Octree."<<endl;
+        if (is_logging_warning)
+           LOG(WARNING)<<"Init Octree."<<endl;
         this->frame_to_build_count_mutex.lock();
         this->frame_to_build_count = 0;
         this->frame_id = 0;
@@ -192,7 +193,8 @@ namespace ygz {
             mpMatcher->ComputeStereoMatches(mpCurrentFrame, ORBMatcher::OPTIFLOW_CV);
 
             if (StereoInitialization() == false) {
-                LOG(INFO) << "Stereo init failed." << endl;
+                if (is_logging_info)
+                    LOG(INFO) << "Stereo init failed." << endl;
                 return;
             }
 
@@ -221,7 +223,8 @@ namespace ygz {
             {
                 // 纯视觉追踪失败了，reset整个系统
                 // 我们并不希望出现这个结果
-                LOG(WARNING) << "Pure vision tracking failed! Reseting system!!" << endl;
+                if (is_logging_warning)
+                    LOG(WARNING) << "Pure vision tracking failed! Reseting system!!" << endl;
                 Reset();
                 return;
             }
@@ -313,7 +316,8 @@ namespace ygz {
         } else if (mState == WEAK) {
             if (is_logging_info)
                 LOG(INFO) <<"track 7"<<endl;
-            LOG(WARNING) << "Running WEAK mode" << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "Running WEAK mode" << endl;
             // use imu only to propagate the pose and try to initialize stereo vision
             PredictCurrentPose();   // 这步可能不可靠
 
@@ -403,8 +407,9 @@ namespace ygz {
 
         if (validMatches <= setting::minTrackLastFrameFeatures) 
         {//failed!
-            LOG(WARNING) << "Track last frame not enough valid matches: " << validMatches << ", I will abort this frame"
-                         << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "Track last frame not enough valid matches: " << validMatches << ", I will abort this frame"
+                             << endl;
             return false;
         }
 
@@ -526,7 +531,8 @@ namespace ygz {
         mpMatcher->ComputeStereoMatches(mpCurrentFrame, ORBMatcher::OPTIFLOW_BASED);
 
         if (StereoInitialization() == false) {
-            LOG(WARNING) << "Stereo init failed." << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "Stereo init failed." << endl;
             // 置状态为等待初始化状态
             mState = NOT_INITIALIZED;
             return;

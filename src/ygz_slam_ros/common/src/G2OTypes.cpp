@@ -36,7 +36,8 @@ namespace ygz {
         // point inverse depth in reference KF
         double rho = vIDP->estimate();
         if (rho < 1e-6) {
-            LOG(WARNING) << "Inv depth should not be negative: " << rho << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "Inv depth should not be negative: " << rho << endl;
         }
 
         // point coordinate in reference KF, body
@@ -346,7 +347,8 @@ namespace ygz {
 
         if (invz < 0) {
             // 点在后面？
-            LOG(WARNING) << "Error, invz = " << invz << endl;
+            if (is_logging_warning)
+                LOG(WARNING) << "Error, invz = " << invz << endl;
             setLevel(1);
             _error = Vector2d(setting::imageWidth, setting::imageHeight);
             return;
