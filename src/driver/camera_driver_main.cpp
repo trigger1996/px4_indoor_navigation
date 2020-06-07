@@ -17,25 +17,29 @@ int main(int argc, char *argv[]) {
 
     ros::init(argc, argv, "camera_driver");
     ros::NodeHandle nh;
-    ros::NodeHandle private_nh("camera_driver");
+    ros::NodeHandle private_nh("px4_indoor_cam_driver");
 
     // ros params
     bool is_show_img = false;
     bool is_calculate_fps = false;
     int  resolution_x = 1280;
     int  resolution_y = 960;
+    string img_l_topic = "/gi/simulation/left/image_raw";
+    string img_r_topic = "/gi/simulation/right/image_raw";
 
-    private_nh.getParam("is_show_img",      is_show_img);
-    private_nh.getParam("is_calculate_fps", is_calculate_fps);
-    private_nh.getParam("resolution_x",     resolution_x);
-    private_nh.getParam("resolution_y",     resolution_y);
+    private_nh.getParam("is_show_img",       is_show_img);
+    private_nh.getParam("is_calculate_fps",  is_calculate_fps);
+    private_nh.getParam("resolution_x",      resolution_x);
+    private_nh.getParam("resolution_y",      resolution_y);
+    private_nh.getParam("image_left_topic",  img_l_topic);
+    private_nh.getParam("image_right_topic", img_r_topic);
     resolution_x *= 2;
 
 
     // ROS varibles
     image_transport::ImageTransport it(nh);
-    image_transport::Publisher img_l_pub = it.advertise("/gi/simulation/left/image_raw",  1);
-    image_transport::Publisher img_r_pub = it.advertise("/gi/simulation/right/image_raw", 1);
+    image_transport::Publisher img_l_pub = it.advertise(img_l_topic,  1);
+    image_transport::Publisher img_r_pub = it.advertise(img_r_topic, 1);
 
     // OpenCV varibles
     VideoCapture cap(0);

@@ -6,15 +6,17 @@
           type="px4_indoor_cam_driver"
           args=""
           output="screen">
-        <param name="is_show_img"      type="bool" value="false" />
-        <param name="is_calculate_fps" type="bool" value="false" />
-        <param name="resolution_x"     type="int"  value="1280" />
-        <param name="resolution_y"     type="int"  value="960" />
+        <param name="is_show_img"       type="bool"    value="false" />
+        <param name="is_calculate_fps"  type="bool"    value="false" />
+        <param name="resolution_x"      type="int"     value="1280" />
+        <param name="resolution_y"      type="int"     value="960" />
+        <param name="image_left_topic"  type="string"  value="/gi/simulation/left/image_raw" />
+        <param name="image_right_topic" type="string"  value="/gi/simulation/right/image_raw" />
     </node>
 
     <!-- RVIZ -->
     <node name="rviz" pkg="rviz" type="rviz" required="true"
-          args="-d $(find px4)/launch/indoor_automatic/configs/rplidar_cartographer.rviz" >
+          args="-d $(find px4)/launch/real_quad/module_tests/configs/camera_driver.rviz" >
     </node>
 
 </launch>
