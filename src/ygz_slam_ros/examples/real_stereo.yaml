@@ -48,7 +48,7 @@ Camera.bf: 39.9554
 #Camera.bf: 0.399554
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
-Camera.RGB: 1
+Camera.RGB: 0
 
 # Close/Far threshold. Baseline times.
 ThDepth: 35

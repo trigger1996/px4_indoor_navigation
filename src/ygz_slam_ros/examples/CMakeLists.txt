@@ -33,3 +33,9 @@ target_link_libraries(VSLAM_ros
         ${YGZ_LIBS}
         ${THIRD_PARTY_LIBS}
         )
+
+add_executable(Real_VSLAM_ros Real_StereoVIO_ros.cpp)
+target_link_libraries(Real_VSLAM_ros
+        ${YGZ_LIBS}
+        ${THIRD_PARTY_LIBS}
+        )

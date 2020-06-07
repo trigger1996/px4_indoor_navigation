@@ -404,6 +404,11 @@
 ###     1 写好Stereo的驱动（OpenCV）和测试用的roslaunch文件
 
 ###     2 Stereo和VSLAM配合测试
+            TODO
+                1 关掉console的显示
+                2 关掉窗口的显示
+                3 在RVIZ中显示
+
 
 ###     3 写好激光雷达的驱动（roslaunch）,配合google cartographer测试
             cd ~/catkin_ws_ros/src/
@@ -411,6 +416,9 @@
             cd ~/catkin_ws_ros
             catkin_make
             然后开始写这个
+
+            rplidar走的是USB，所以
+            每次插拔或者开机都要sudo chmod /dev/ttyUSB0
 
 
 

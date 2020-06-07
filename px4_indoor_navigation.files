@@ -4,6 +4,7 @@ src/debug/trajectory_recorder_main.cpp
 src/driver/CMakeLists.txt
 src/driver/camera_driver_main.cpp
 src/ygz_slam_ros/CMakeLists.txt
+src/ygz_slam_ros/examples/Real_StereoVIO_ros.cpp
 src/ygz_slam_ros/examples/real_stereo.yaml
 src/ygz_slam_ros/util/src/Viewer.cpp
 src/ygz_slam_ros/util/src/EurocReader.cpp
