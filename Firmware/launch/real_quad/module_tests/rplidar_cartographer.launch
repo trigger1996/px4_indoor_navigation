@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Rplidar Driver -->
+    <include file="$(find rplidar_ros)/launch/rplidar.launch">
+    </include>
+
+
+    <!-- Cartographer SLAM -->
+    <param name="/use_sim_time" value="false" />
+    <node name="cartographer_node"
+          pkg="cartographer_ros"
+          type="cartographer_node"
+          args="-configuration_directory $(find px4)/launch/real_quad/module_tests/configs -configuration_basename rplidar_real.lua"
+          output="screen">
+    </node>
+    <node name="cartographer_occupancy_grid_node"
+          pkg="cartographer_ros"
+          type="cartographer_occupancy_grid_node" />
+    <node name="robot_pose_publisher"
+          pkg="robot_pose_publisher"
+          type="robot_pose_publisher"
+          respawn="false"
+          output="screen" >
+          <!--remap from="/robot_pose" to="/mavros/vision_pose/pose" /-->
+    </node>
+
+    <!-- TF -->
+    <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" args="0 0 0 0 0 0 base_link laser 100" />
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+          args="-d $(find px4)/launch/real_quad/module_tests/configs/rplidar_cartographer.rviz" >
+    </node>
+
+</launch>

@@ -398,6 +398,22 @@
 
             echo "/opt/images/swap  swap  swap  sw  0  0"  >> / etc / fstab
             最后一个可以手动添加
+# 2020.6.7
+        真机调试流程
+
+###     1 写好Stereo的驱动（OpenCV）和测试用的roslaunch文件
+
+###     2 Stereo和VSLAM配合测试
+
+###     3 写好激光雷达的驱动（roslaunch）,配合google cartographer测试
+            cd ~/catkin_ws_ros/src/
+            git clone https://github.com/Slamtec/rplidar_ros
+            cd ~/catkin_ws_ros
+            catkin_make
+            然后开始写这个
+
+
+
 
 #	SPECAL THANKS to GAAS Team for their intellgence and inspiration for this project !
 

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Rplidar Driver -->
+    <include file="$(find rplidar_ros)/launch/rplidar.launch">
+
+    </include>
+
+    <!-- RVIZ -->
+    <node name="rviz" pkg="rviz" type="rviz" required="true"
+          args="-d $(find px4)/launch/real_quad/module_tests/configs/rplidar_driver.rviz" >
+    </node>
+
+</launch>
