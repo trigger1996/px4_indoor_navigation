@@ -147,6 +147,10 @@ add_executable(${PROJECT_NAME}_topic_relay
     src/topic_relay/topic_relay_main.cpp
 )
 
+add_executable(${PROJECT_NAME}_topic_relay_real_quad
+    src/topic_relay/topic_relay_real_quad_main.cpp
+)
+
 add_executable(${PROJECT_NAME}_trajectory_recorder
     src/debug/trajectory_recorder_main.cpp
 )
@@ -167,6 +171,10 @@ target_link_libraries(${PROJECT_NAME}_key_control
 )
 
 target_link_libraries(${PROJECT_NAME}_topic_relay
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(${PROJECT_NAME}_topic_relay_real_quad
     ${catkin_LIBRARIES}
 )
 
