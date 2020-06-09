@@ -7,6 +7,7 @@ src/topic_relay/topic_relay_real_quad_main.cpp
 src/ygz_slam_ros/CMakeLists.txt
 src/ygz_slam_ros/examples/Real_StereoVIO_ros.cpp
 src/ygz_slam_ros/examples/real_stereo.yaml
+src/ygz_slam_ros/examples/simulationCamera.yaml
 src/ygz_slam_ros/util/src/Viewer.cpp
 src/ygz_slam_ros/util/src/EurocReader.cpp
 src/ygz_slam_ros/util/include/ygz/Viewer.h

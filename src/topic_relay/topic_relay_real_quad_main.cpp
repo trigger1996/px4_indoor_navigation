@@ -36,10 +36,14 @@ int main(int argc, char *argv[]) {
     int is_use_vslam_data = false;
     private_nh.getParam("is_use_vslam_data", is_use_vslam_data);
 
-    double data_fusion_K_xy = 0.66;
-    double data_fusion_K_z  = 0.66;
-    private_nh.getParam("data_fusion_K_xy", data_fusion_K_xy);
-    private_nh.getParam("data_fusion_K_z",  data_fusion_K_z);
+    double laser_lpf_K_xy       = 0.85;
+    double external_alt_lpf_K_z = 1.00;
+    double vision_lpf_K_xy      = 0.33;
+    double vision_lpf_K_z       = 0.2;
+    private_nh.getParam("laser_lpf_K_xy",       laser_lpf_K_xy);
+    private_nh.getParam("external_alt_lpf_K_z", external_alt_lpf_K_z);
+    private_nh.getParam("vision_lpf_K_xy",      vision_lpf_K_xy);
+    private_nh.getParam("vision_lpf_K_z",       vision_lpf_K_z);
 
     // robot pose integration
     ros::Subscriber fcu_alt_sub = nh.subscribe<mavros_msgs::Altitude>
@@ -63,32 +67,43 @@ int main(int argc, char *argv[]) {
     while (ros::ok()) {
 
         if (is_use_vslam_data) {
-            if (is_vslam_pose_updated && is_external_alt_updated && is_laser_slam_pose_updated) {
+            if (is_external_alt_updated && is_laser_slam_pose_updated) {
                 // integrate 2D pose and alt to 3D
                 geometry_msgs::PoseStamped pos_3d_to_pub;
                 pos_3d_to_pub.header.stamp = ros::Time::now();
                 pos_3d_to_pub.header.frame_id = "map";
 
-                pos_3d_to_pub.pose.position.x = laser_slam_pose.position.x;
-                pos_3d_to_pub.pose.position.y = laser_slam_pose.position.y;
-                pos_3d_to_pub.pose.position.z = external_alt.relative;
+                // LPF
+                pos_3d_to_pub.pose.position.x += (laser_slam_pose.position.x - pos_3d_to_pub.pose.position.x) * laser_lpf_K_xy;
+                pos_3d_to_pub.pose.position.y += (laser_slam_pose.position.y - pos_3d_to_pub.pose.position.y) * laser_lpf_K_xy;
+                pos_3d_to_pub.pose.position.z += (external_alt.relative      - pos_3d_to_pub.pose.position.z) * external_alt_lpf_K_z;
 
                 pos_3d_to_pub.pose.orientation.x = pos_3d_to_pub.pose.orientation.y =
                 pos_3d_to_pub.pose.orientation.z = pos_3d_to_pub.pose.orientation.w = 0.;
 
-                // data fusion
-                pos_3d_to_pub.pose.position.x = pos_3d_to_pub.pose.position.x * data_fusion_K_xy +
-                                                vslam_pose.pose.position.x * (1. - data_fusion_K_xy);
-                pos_3d_to_pub.pose.position.y = pos_3d_to_pub.pose.position.y * data_fusion_K_xy +
-                                                vslam_pose.pose.position.y * (1. - data_fusion_K_xy);
-                pos_3d_to_pub.pose.position.z = pos_3d_to_pub.pose.position.z * data_fusion_K_z +
-                                                vslam_pose.pose.position.z * (1. - data_fusion_K_z);
+                slam_pose_3d_pub.publish(pos_3d_to_pub);
+
+                is_external_alt_updated    = false;
+                is_laser_slam_pose_updated = false;
+            }
+
+            if (is_vslam_pose_updated) {
+                // integrate 2D pose and alt to 3D
+                geometry_msgs::PoseStamped pos_3d_to_pub;
+                pos_3d_to_pub.header.stamp = ros::Time::now();
+                pos_3d_to_pub.header.frame_id = "map";
+
+                // Vision LPF
+                pos_3d_to_pub.pose.position.x += (vslam_pose.pose.position.x - pos_3d_to_pub.pose.position.x) * vision_lpf_K_xy;
+                pos_3d_to_pub.pose.position.y += (vslam_pose.pose.position.y - pos_3d_to_pub.pose.position.y) * vision_lpf_K_xy;
+                pos_3d_to_pub.pose.position.z += (vslam_pose.pose.position.z - pos_3d_to_pub.pose.position.z) * vision_lpf_K_z;
+
+                pos_3d_to_pub.pose.orientation.x = pos_3d_to_pub.pose.orientation.y =
+                pos_3d_to_pub.pose.orientation.z = pos_3d_to_pub.pose.orientation.w = 0.;
 
                 slam_pose_3d_pub.publish(pos_3d_to_pub);
 
                 is_vslam_pose_updated      = false;
-                is_external_alt_updated    = false;
-                is_laser_slam_pose_updated = false;
             }
         }
         else {

@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
     // ROS varibles
     image_transport::ImageTransport it(nh);
-    image_transport::Publisher img_l_pub = it.advertise(img_l_topic,  1);
+    image_transport::Publisher img_l_pub = it.advertise(img_l_topic, 1);
     image_transport::Publisher img_r_pub = it.advertise(img_r_topic, 1);
 
     // OpenCV varibles
