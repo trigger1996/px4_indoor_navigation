@@ -591,9 +591,15 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     //EstimatedPose.pose.position.y = DroneFrameSE3_t[1];
     //EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
 
-    EstimatedPose.pose.position.x = DroneFrameSE3_t[0] * cos(pixhawk_heading_rad) + DroneFrameSE3_t[1] * sin(pixhawk_heading_rad);
-    EstimatedPose.pose.position.y = DroneFrameSE3_t[1] * cos(pixhawk_heading_rad) - DroneFrameSE3_t[0] * sin(pixhawk_heading_rad);
+    //EstimatedPose.pose.position.x = DroneFrameSE3_t[0] * cos(pixhawk_heading_rad) + DroneFrameSE3_t[1] * sin(pixhawk_heading_rad);
+    //EstimatedPose.pose.position.y = DroneFrameSE3_t[1] * cos(pixhawk_heading_rad) - DroneFrameSE3_t[0] * sin(pixhawk_heading_rad);
+    //EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
+
+    EstimatedPose.pose.position.y = DroneFrameSE3_t[0] * cos(pixhawk_heading_rad) + DroneFrameSE3_t[1] * sin(pixhawk_heading_rad);
+    EstimatedPose.pose.position.x = DroneFrameSE3_t[1] * cos(pixhawk_heading_rad) - DroneFrameSE3_t[0] * sin(pixhawk_heading_rad);
     EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
+
+    cout << 233 << endl;
 
     pExternalEstimate->publish(EstimatedPose);
 

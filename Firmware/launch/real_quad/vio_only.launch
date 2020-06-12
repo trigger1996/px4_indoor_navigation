@@ -2,7 +2,7 @@
 	<!-- vim: set ft=xml noet : -->
 	<!-- example launch script for PX4 based FCU's -->
 
-	<arg name="fcu_url" default="/dev/ttyUSB0:500000" />
+	<arg name="fcu_url" default="/dev/ttyUSB0:921600" />
 	<arg name="gcs_url" default="" />
 	<arg name="tgt_system" default="1" />
 	<arg name="tgt_component" default="1" />
@@ -32,8 +32,8 @@
           output="screen">
         <param name="is_show_img"       type="bool"    value="false" />
         <param name="is_calculate_fps"  type="bool"    value="false" />
-        <param name="resolution_x"      type="int"     value="640" />
-        <param name="resolution_y"      type="int"     value="480" />
+        <param name="resolution_x"      type="int"     value="1280" />
+        <param name="resolution_y"      type="int"     value="960" />
         <param name="image_left_topic"  type="string"  value="/gi/simulation/left/image_raw" />
         <param name="image_right_topic" type="string"  value="/gi/simulation/right/image_raw" />
     </node>
