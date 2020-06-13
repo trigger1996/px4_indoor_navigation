@@ -379,7 +379,7 @@ int main(int argc, char *argv[]) {
 	vector<string> imagelist;
 	float squareSize = 29.f;						// 标定板黑白格子的大小 单位mm  
 
-	int image_size = 20;
+	int image_size = 62;
 
 	boardSize.width  = 9;
 	boardSize.height = 6;
